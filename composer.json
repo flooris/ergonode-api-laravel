@@ -1,0 +1,33 @@
+{
+    "name": "flooris/ergonode-api",
+    "type": "library",
+    "description": "PHP Laravel package for consuming the Ergonode PIM backend",
+    "license": "GPL-3.0-or-later",
+    "authors": [
+        {
+            "name": "Florian Kwakkenbos",
+            "email": "f.kwakkenbos@flooris.nl"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=8.0",
+        "guzzlehttp/guzzle": "^6.5.5|^7.0",
+        "illuminate/config": "^7.0|^8.0"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "autoload": {
+        "psr-4": {
+            "Flooris\\ErgonodeApi\\": "src"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Flooris\\ErgonodeApi\\ErgonodeApiServiceProvider"
+            ]
+        }
+    }
+}
