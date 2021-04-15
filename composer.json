@@ -1,5 +1,5 @@
 {
-    "name": "flooris/ergonode-api",
+    "name": "flooris/ergonode-api-laravel",
     "type": "library",
     "description": "PHP Laravel package for consuming the Ergonode PIM backend",
     "license": "GPL-3.0-or-later",

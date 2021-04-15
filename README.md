@@ -2,14 +2,14 @@
 
 Laravel PHP package for consuming the Ergonode PIM backend services.
 
-## Install steps
+## Add the package to Laravel
 ```bash
-composer require flooris/ergonode-api
-php artisan vendor:publish --tag=ergonode-api
+composer require flooris/ergonode-api-laravel
+php artisan vendor:publish --tag=ergonode-api-laravel
 nano config/ergonode.php
 ```
 
-## Usage steps
+## Usage example
 ```PHP
 $hostname = config('ergonode.hostname');
 $username = config('ergonode.username');
