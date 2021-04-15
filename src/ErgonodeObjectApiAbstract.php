@@ -64,7 +64,9 @@ abstract class ErgonodeObjectApiAbstract
             RequestOptions::JSON => $body,
         ];
 
-        $this->post("{$locale}/{$this->endpointSlug}", $options);
+        $options = $this->getHttpRequestOptions($options);
+
+        $this->getErgonodeApi()->getHttpClient()->post("{$locale}/{$this->endpointSlug}", $options);
 
         return true;
     }
@@ -75,9 +77,37 @@ abstract class ErgonodeObjectApiAbstract
             RequestOptions::JSON => $body,
         ];
 
-        $this->put("{$locale}/{$this->endpointSlug}/{$id}", $options);
+        $options = $this->getHttpRequestOptions($options);
+
+        $this->getErgonodeApi()->getHttpClient()->put("{$locale}/{$this->endpointSlug}/{$id}", $options);
 
         return true;
+    }
+
+    public function append(string $locale, string $entityUri, array $body): bool
+    {
+        $options = [
+            RequestOptions::JSON => $body,
+        ];
+
+        $options = $this->getHttpRequestOptions($options);
+
+        $this->getErgonodeApi()->getHttpClient()->patch("{$locale}/{$this->endpointSlug}/{$entityUri}", $options);
+
+        return true;
+    }
+
+    public function upload(string $locale, string $entityUri, array $fileData)
+    {
+        $options = [
+            RequestOptions::JSON => [
+                'file' => $fileData
+            ]
+        ];
+
+        $options = $this->getHttpRequestOptions($options);
+
+        $this->getErgonodeApi()->getHttpClient()->post("{$locale}/{$this->endpointSlug}/{$entityUri}", $options);
     }
 
     /**
@@ -186,20 +216,6 @@ abstract class ErgonodeObjectApiAbstract
         }
 
         return $collection;
-    }
-
-    private function post(string $uri, array $options = null): ResponseInterface
-    {
-        $options = $this->getHttpRequestOptions($options);
-
-        return $this->getErgonodeApi()->getHttpClient()->post($uri, $options);
-    }
-
-    private function put(string $uri, array $options = null): ResponseInterface
-    {
-        $options = $this->getHttpRequestOptions($options);
-
-        return $this->getErgonodeApi()->getHttpClient()->put($uri, $options);
     }
 
     private function getHttpRequestOptions(?array $options = null): array
