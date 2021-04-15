@@ -15,6 +15,7 @@ class ProductModel
     public string $template_id;
     public string $design_template_id;
     public array $attributes;
+    private Collection $attributeOptions;
 
     public function __construct(ProductClient $client, \stdClass $responseObject, string $locale)
     {
@@ -27,6 +28,7 @@ class ProductModel
         $this->template_id        = $responseObject->template_id;
         $this->design_template_id = $responseObject->design_template_id;
         $this->attributes         = json_decode(json_encode($responseObject->attributes), true);
+        $this->attributeOptions   = collect();
     }
 
     public function template(): TemplateModel
@@ -35,5 +37,56 @@ class ProductModel
         $templateClient->find($this->locale, $this->template_id);
 
         return $templateClient->model();
+    }
+
+    public function addAttribute(AttributeModel $attribute, ?AttributeOptionModel $attributeOption, string $label, string $locale = 'en_GB'): void
+    {
+        $this->attributeOptions->push([
+            'attribute'       => $attribute,
+            'attributeOption' => $attributeOption,
+            'label'           => $label,
+            'locale'          => $locale,
+        ]);
+    }
+
+    public function saveAttributes(): void
+    {
+        $body = [
+            'data' => [],
+        ];
+
+        $attributes = [];
+
+        $this->attributeOptions->each(function ($item) use (&$attributes) {
+
+            $isSelect = (bool)$item['attributeOption'];
+
+            $values = [];
+
+            if ($isSelect) {
+                $values[] = [
+                    'language' => $item['locale'],
+                    'value'    => $item['attributeOption']->id,
+                ];
+            } else {
+                $values[] = [
+                    'language' => $item['locale'],
+                    'value'    => $item['label'],
+                ];
+            }
+
+            $attributes[] = [
+                'id'     => $item['attribute']->id,
+                'values' => $values,
+            ];
+        });
+
+
+        $body['data'][] = [
+            'id'      => $this->id,
+            'payload' => $attributes,
+        ];
+
+        $this->client->append($this->locale, 'attributes', $body);
     }
 }
