@@ -97,17 +97,26 @@ abstract class ErgonodeObjectApiAbstract
         return true;
     }
 
-    public function upload(string $locale, string $entityUri, array $fileData)
+    public function upload(string $entityUri, array $imageData)
     {
         $options = [
-            RequestOptions::JSON => [
-                'file' => $fileData
-            ]
+            RequestOptions::MULTIPART => [
+                [
+                    'name'     => 'upload',
+                    'contents' => $imageData['image'],
+                    'filename' => $imageData['file_name'],
+                ],
+            ],
+
         ];
 
         $options = $this->getHttpRequestOptions($options);
 
-        $this->getErgonodeApi()->getHttpClient()->post("{$locale}/{$this->endpointSlug}/{$entityUri}", $options);
+        try {
+            return $response = json_decode($this->getErgonodeApi()->getHttpClient()->post("{$entityUri}", $options)->getBody()->getContents());
+        }catch (\Exception $exception){
+            throw $exception;
+        }
     }
 
     /**
@@ -249,6 +258,11 @@ abstract class ErgonodeObjectApiAbstract
             $options[RequestOptions::DEBUG] = false;
         }
 
+        if (isset($options[RequestOptions::MULTIPART]) && isset($options[RequestOptions::HEADERS]['Content-Type'])){
+            unset($options[RequestOptions::HEADERS]['Content-Type']);
+        }
+
         return $options;
     }
+
 }
