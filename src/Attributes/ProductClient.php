@@ -18,13 +18,22 @@ class ProductClient extends ErgonodeObjectApiAbstract
         );
     }
 
-    public function findBySku(string $locale, string $sku): bool
+    public function findBySku(string $locale, string $sku)
     {
         $itemCollection = $this->filter($locale, "sku={$sku}");
 
         $this->model = $itemCollection->where('sku', $sku)->first();
 
-        return (bool)$this->model;
+        return Bool($this->model);
+    }
+
+    public function getProductBySku(string $locale, string $sku)
+    {
+        $itemCollection = $this->filter($locale, "sku={$sku}");
+
+        $this->model = $itemCollection->where('sku', $sku)->first();
+
+        return $this->model;
     }
 
     public function model(): ?ProductModel

@@ -9,21 +9,16 @@ use GuzzleHttp\Exception\GuzzleException;
 
 abstract class ErgonodeObjectApiAbstract
 {
+    public $model;
     private ErgonodeApi $ergonodeApi;
     private string $endpointSlug;
     private string $modelClass;
-    public $model;
 
     public function __construct(ErgonodeApi $connector, string $endpointSlug, string $modelClass)
     {
         $this->ergonodeApi  = $connector;
         $this->endpointSlug = $endpointSlug;
         $this->modelClass   = $modelClass;
-    }
-
-    public function getErgonodeApi(): ErgonodeApi
-    {
-        return $this->ergonodeApi;
     }
 
     /**
@@ -39,9 +34,129 @@ abstract class ErgonodeObjectApiAbstract
     /**
      * @throws GuzzleException
      */
-    public function all(string $locale): Collection
+    private function getModel(string $uri, string $modelClass, string $locale, ?array $options = null)
     {
-        return $this->getCollection("{$locale}/{$this->endpointSlug}", $this->modelClass, $locale);
+        try {
+            $responseObject = json_decode(
+                $this->get($uri, $options)
+                    ->getBody()
+                    ->getContents()
+            );
+
+            return new $modelClass(
+                client: $this,
+                responseObject: $responseObject,
+                locale: $locale
+            );
+
+        } catch (GuzzleException $exception) {
+            if ($exception->getCode() === 404) {
+                return null;
+            }
+
+            throw $exception;
+        }
+
+    }
+
+    /**
+     * @throws GuzzleException
+     */
+    private function get(string $uri, ?array $options = null): ResponseInterface
+    {
+        $options = $this->getHttpRequestOptions($options);
+
+        return $this->getErgonodeApi()
+            ->getHttpClient()
+            ->get($uri, $options);
+    }
+
+    private function getHttpRequestOptions(?array $options = null): array
+    {
+        $defaultOptions = [
+            RequestOptions::HEADERS     => [
+                'User-Agent'       => config('ergonode.client-options.user-agent', 'flooris/ergonode-api'),
+                'Accept'           => 'application/json',
+                'Content-Type'     => 'application/json',
+                'JWTAuthorization' => "Bearer " . $this->getErgonodeApi()->getAuthenticator()->getBearerToken(),
+            ],
+            RequestOptions::SYNCHRONOUS => true,
+            RequestOptions::DEBUG       => false,
+        ];
+
+        if (! $options) {
+            return $defaultOptions;
+        }
+
+        if (isset($options[RequestOptions::HEADERS])) {
+            $options[RequestOptions::HEADERS] = array_merge($options[RequestOptions::HEADERS], $defaultOptions[RequestOptions::HEADERS]);
+        } else {
+            $options[RequestOptions::HEADERS] = $defaultOptions[RequestOptions::HEADERS];
+        }
+
+        if (! isset($options[RequestOptions::SYNCHRONOUS])) {
+            $options[RequestOptions::SYNCHRONOUS] = true;
+        }
+
+        if (! isset($options[RequestOptions::DEBUG])) {
+            $options[RequestOptions::DEBUG] = false;
+        }
+
+        if (isset($options[RequestOptions::MULTIPART]) && isset($options[RequestOptions::HEADERS]['Content-Type'])) {
+            unset($options[RequestOptions::HEADERS]['Content-Type']);
+        }
+
+        return $options;
+    }
+
+    public function getErgonodeApi(): ErgonodeApi
+    {
+        return $this->ergonodeApi;
+    }
+
+    /**
+     * @throws GuzzleException
+     */
+    public function all(string $locale)
+    {
+        return json_decode($this->get('en_GB/products?offset=0&limit=25&extended=true&columns=fm_product_id:en_GB,color:en_GB,model:en_GB,name:en_GB,storage:en_GB,introduction_year:en_GB,index,sku,esa_default_label
+            ')->getBody()->getContents());
+    }
+
+    public function getAttributeOption(string $locale, $attributeCode, $optionCode)
+    {
+        return json_decode($this->get("$locale/attributes/{$attributeCode}/options/{$optionCode}")->getBody()->getContents());
+    }
+
+    /**
+     * @throws GuzzleException
+     */
+    private function getCollection(string $uri, string $modelClass, string $locale, ?array $options = null): Collection
+    {
+        $collection   = collect();
+        $responseData = json_decode(
+            $this->get($uri, $options)
+                ->getBody()
+                ->getContents()
+        );
+
+        $items = [];
+
+        if (is_array($responseData)) {
+            $items = $responseData;
+        } else if (isset($responseData->collection)) {
+            $items = $responseData->collection;
+        }
+
+        foreach ($items as $responseObject) {
+            $collection = $collection->push((new $modelClass(
+                client: $this,
+                responseObject: $responseObject,
+                locale: $locale
+            )));
+        }
+
+        return $collection;
     }
 
     /**
@@ -56,6 +171,43 @@ abstract class ErgonodeObjectApiAbstract
         ];
 
         return $this->getCollectionByIndex("{$locale}/{$this->endpointSlug}", $this->modelClass, $locale, $options);
+    }
+
+    /**
+     * @throws GuzzleException
+     */
+    private function getCollectionByIndex(string $uri, string $modelClass, string $locale, ?array $options = null): Collection
+    {
+        $collection   = collect();
+        $responseData = json_decode(
+            $this->get($uri, $options)
+                ->getBody()
+                ->getContents()
+        );
+
+        $items = [];
+
+        if (is_array($responseData)) {
+            $items = $responseData;
+        } else if (isset($responseData->collection)) {
+            $items = $responseData->collection;
+        }
+
+        foreach ($items as $responseObject) {
+            $responseObjectDetail = json_decode(
+                $this->get("{$uri}/{$responseObject->id}")
+                    ->getBody()
+                    ->getContents()
+            );
+
+            $collection = $collection->push((new $modelClass(
+                client: $this,
+                responseObject: $responseObjectDetail,
+                locale: $locale
+            )));
+        }
+
+        return $collection;
     }
 
     public function create(string $locale, array $body): bool
@@ -107,162 +259,77 @@ abstract class ErgonodeObjectApiAbstract
                     'filename' => $imageData['file_name'],
                 ],
             ],
-
         ];
 
         $options = $this->getHttpRequestOptions($options);
 
         try {
-            return $response = json_decode($this->getErgonodeApi()->getHttpClient()->post("{$entityUri}", $options)->getBody()->getContents());
-        }catch (\Exception $exception){
+            return json_decode($this->getErgonodeApi()
+                ->getHttpClient()
+                ->post("{$entityUri}", $options)
+                ->getBody()
+                ->getContents());
+        } catch (\Exception $exception) {
             throw $exception;
         }
     }
 
-    /**
-     * @throws GuzzleException
-     */
-    private function get(string $uri, ?array $options = null): ResponseInterface
+    public function findImage(string $id, array $imageData = null)
     {
-        $options = $this->getHttpRequestOptions($options);
-
-        return $this->getErgonodeApi()
-            ->getHttpClient()
-            ->get($uri, $options);
-    }
-
-    /**
-     * @throws GuzzleException
-     */
-    private function getModel(string $uri, string $modelClass, string $locale, ?array $options = null)
-    {
+        $entityUrl = "en_GB/multimedia/{$id}";
         try {
-            $responseObject = json_decode(
-                $this->get($uri, $options)
-                    ->getBody()
-                    ->getContents()
-            );
-
-            return new $modelClass(
-                client: $this,
-                responseObject: $responseObject,
-                locale: $locale
-            );
-
-        } catch (GuzzleException $exception) {
-            if ($exception->getCode() === 404) {
-                return null;
-            }
-
+            return json_decode($this->get($entityUrl)->getBody()->getContents());
+        } catch (\Exception $exception) {
             throw $exception;
         }
 
     }
 
-    /**
-     * @throws GuzzleException
-     */
-    private function getCollectionByIndex(string $uri, string $modelClass, string $locale, ?array $options = null): Collection
+    public function updateImage(string $id, array $imageData)
     {
-        $collection   = collect();
-        $responseData = json_decode(
-            $this->get($uri, $options)
-                ->getBody()
-                ->getContents()
-        );
+        $entityUrl = "en_GB/multimedia/{$id}";
 
-        $items = [];
-
-        if (is_array($responseData)) {
-            $items = $responseData;
-        } else if (isset($responseData->collection)) {
-            $items = $responseData->collection;
-        }
-
-        foreach ($items as $responseObject) {
-            $responseObjectDetail = json_decode(
-                $this->get("{$uri}/{$responseObject->id}")
-                    ->getBody()
-                    ->getContents()
-            );
-
-            $collection = $collection->push((new $modelClass(
-                client: $this,
-                responseObject: $responseObjectDetail,
-                locale: $locale
-            )));
-        }
-
-        return $collection;
-    }
-
-    /**
-     * @throws GuzzleException
-     */
-    private function getCollection(string $uri, string $modelClass, string $locale, ?array $options = null): Collection
-    {
-        $collection   = collect();
-        $responseData = json_decode(
-            $this->get($uri, $options)
-                ->getBody()
-                ->getContents()
-        );
-
-        $items = [];
-
-        if (is_array($responseData)) {
-            $items = $responseData;
-        } else if (isset($responseData->collection)) {
-            $items = $responseData->collection;
-        }
-
-        foreach ($items as $responseObject) {
-            $collection = $collection->push((new $modelClass(
-                client: $this,
-                responseObject: $responseObject,
-                locale: $locale
-            )));
-        }
-
-        return $collection;
-    }
-
-    private function getHttpRequestOptions(?array $options = null): array
-    {
-        $defaultOptions = [
-            RequestOptions::HEADERS     => [
-                'User-Agent'       => config('ergonode.client-options.user-agent', 'flooris/ergonode-api'),
-                'Accept'           => 'application/json',
-                'Content-Type'     => 'application/json',
-                'JWTAuthorization' => "Bearer " . $this->getErgonodeApi()->getAuthenticator()->getBearerToken(),
+        $options = [
+            RequestOptions::JSON => [
+                'name' => $imageData['file_name'],
             ],
-            RequestOptions::SYNCHRONOUS => true,
-            RequestOptions::DEBUG       => false,
         ];
 
-        if (! $options) {
-            return $defaultOptions;
-        }
+        $options = $this->getHttpRequestOptions($options);
 
-        if (isset($options[RequestOptions::HEADERS])) {
-            $options[RequestOptions::HEADERS] = array_merge($options[RequestOptions::HEADERS], $defaultOptions[RequestOptions::HEADERS]);
-        } else {
-            $options[RequestOptions::HEADERS] = $defaultOptions[RequestOptions::HEADERS];
+        try {
+            return json_decode($this->getErgonodeApi()
+                ->getHttpClient()
+                ->put($entityUrl, $options)
+                ->getBody()
+                ->getContents());
+        } catch (\Exception $exception) {
+            throw $exception;
         }
+    }
 
-        if (! isset($options[RequestOptions::SYNCHRONOUS])) {
-            $options[RequestOptions::SYNCHRONOUS] = true;
+    public function addToGallery(string $id, string $imageId): \stdClass
+    {
+        $entityUrl = "en_GB/attribute/{$id}/validate";
+
+        $validateOptions = [
+            RequestOptions::JSON => ['value' => [$imageId]],
+        ];
+
+        $validateOptions = $this->getHttpRequestOptions($validateOptions);
+
+
+        try {
+            return json_decode($this->getErgonodeApi()
+                ->getHttpClient()
+                ->post($entityUrl, $validateOptions)
+                ->getBody()
+                ->getContents());
+
+
+        } catch (\Exception $e) {
+            throw $e;
         }
-
-        if (! isset($options[RequestOptions::DEBUG])) {
-            $options[RequestOptions::DEBUG] = false;
-        }
-
-        if (isset($options[RequestOptions::MULTIPART]) && isset($options[RequestOptions::HEADERS]['Content-Type'])){
-            unset($options[RequestOptions::HEADERS]['Content-Type']);
-        }
-
-        return $options;
     }
 
 }
