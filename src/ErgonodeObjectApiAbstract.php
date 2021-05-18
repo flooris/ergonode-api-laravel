@@ -119,6 +119,60 @@ abstract class ErgonodeObjectApiAbstract
         }
     }
 
+    public function findImage(string $id, array $imageData = null)
+    {
+        $entityUrl = "en_GB/multimedia/{$id}";
+        try {
+            return json_decode($this->get($entityUrl)->getBody()->getContents());
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
+    }
+
+    public function updateImage(string $id, array $imageData)
+    {
+        $entityUrl = "en_GB/multimedia/{$id}";
+
+        $options = [
+            RequestOptions::JSON => [
+                'name' => $imageData['file_name'],
+            ],
+        ];
+
+        $options = $this->getHttpRequestOptions($options);
+
+        try {
+            return json_decode($this->getErgonodeApi()
+                ->getHttpClient()
+                ->put($entityUrl, $options)
+                ->getBody()
+                ->getContents());
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
+    }
+
+    public function addToGallery(string $id, string $imageId, string $locale = 'en_GB'): \stdClass
+    {
+        $entityUrl = "{$locale}/attribute/{$id}/validate";
+
+        $validateOptions = [
+            RequestOptions::JSON => ['value' => [$imageId]],
+        ];
+
+        $validateOptions = $this->getHttpRequestOptions($validateOptions);
+
+        try {
+            return json_decode($this->getErgonodeApi()
+                ->getHttpClient()
+                ->post($entityUrl, $validateOptions)
+                ->getBody()
+                ->getContents());
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
     /**
      * @throws GuzzleException
      */
