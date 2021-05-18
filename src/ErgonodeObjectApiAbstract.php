@@ -37,11 +37,26 @@ abstract class ErgonodeObjectApiAbstract
     }
 
     /**
+     * @param string $locale
+     * @param int    $limit
+     * @param array  $columns
      * @throws GuzzleException
      */
-    public function all(string $locale): Collection
+    public function all(string $locale, array $columns,int $limit = 25, $page = 1,): \stdClass
     {
-        return $this->getCollection("{$locale}/{$this->endpointSlug}", $this->modelClass, $locale);
+        $offset = $limit * $page;
+        $combinedColumns = implode(',', $columns);
+        $products= json_decode($this->get("{$locale}/products?offset={$offset}&limit={$limit}&extended=true&columns={$combinedColumns}")
+            ->getBody()
+            ->getContents());
+        
+        $totalPages = ceil($products->info->count / $limit) - 1;
+
+        if ( $page > $totalPages ){
+            throw new \Exception("You have exceeded the offset of the pages. there are {$totalPages}, you have given {$page}", 400);
+        }
+
+        return $products;
     }
 
     /**
@@ -263,6 +278,11 @@ abstract class ErgonodeObjectApiAbstract
         }
 
         return $options;
+    }
+
+    public function getAttributeOption(string $locale, $attributeCode, $optionCode)
+    {
+        return json_decode($this->get("$locale/attributes/{$attributeCode}/options/{$optionCode}")->getBody()->getContents());
     }
 
 }
