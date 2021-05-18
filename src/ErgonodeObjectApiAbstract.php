@@ -38,25 +38,29 @@ abstract class ErgonodeObjectApiAbstract
 
     /**
      * @param string $locale
-     * @param int    $limit
+     * @param string $entityUri
      * @param array  $columns
+     * @param int    $limit
+     * @param int    $page
+     * @return \stdClass
      * @throws GuzzleException
+     * @throws \Exception
      */
-    public function all(string $locale, array $columns,int $limit = 25, $page = 1,): \stdClass
+    public function all(string $locale, string $entityUri, array $columns, int $limit = 25, int $page = 1,): \stdClass
     {
-        $offset = $limit * $page;
+        $offset          = $limit * $page;
         $combinedColumns = implode(',', $columns);
-        $products= json_decode($this->get("{$locale}/products?offset={$offset}&limit={$limit}&extended=true&columns={$combinedColumns}")
+        $result          = json_decode($this->get("{$locale}/{$entityUri}?offset={$offset}&limit={$limit}&extended=true&columns={$combinedColumns}")
             ->getBody()
             ->getContents());
-        
-        $totalPages = ceil($products->info->count / $limit) - 1;
 
-        if ( $page > $totalPages ){
+        $totalPages = ceil($result->info->count / $limit) - 1;
+
+        if ($page > $totalPages) {
             throw new \Exception("You have exceeded the offset of the pages. there are {$totalPages}, you have given {$page}", 400);
         }
 
-        return $products;
+        return $result;
     }
 
     /**
@@ -280,9 +284,11 @@ abstract class ErgonodeObjectApiAbstract
         return $options;
     }
 
-    public function getAttributeOption(string $locale, $attributeCode, $optionCode)
+    public function getAttributeOption(string $locale, $attributeCode, $optionCode): \stdClass
     {
-        return json_decode($this->get("$locale/attributes/{$attributeCode}/options/{$optionCode}")->getBody()->getContents());
+        return json_decode($this->get("$locale/attributes/{$attributeCode}/options/{$optionCode}")
+            ->getBody()
+            ->getContents());
     }
 
 }
