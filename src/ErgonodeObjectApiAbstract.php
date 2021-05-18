@@ -284,11 +284,17 @@ abstract class ErgonodeObjectApiAbstract
         return $options;
     }
 
-    public function getAttributeOption(string $locale, $attributeCode, $optionCode): \stdClass
+    public function getAttributeOption(string $locale, string $attributeCode, string $optionCode): \stdClass
     {
-        return json_decode($this->get("$locale/attributes/{$attributeCode}/options/{$optionCode}")
+        $option = json_decode($this->get("$locale/attributes/{$attributeCode}/options/{$optionCode}")
             ->getBody()
             ->getContents());
+
+        if (gettype($option) == "array" && ! count($option)) {
+            return new \stdClass();
+        }
+
+        return $option;
     }
 
 }
