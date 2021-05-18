@@ -37,30 +37,11 @@ abstract class ErgonodeObjectApiAbstract
     }
 
     /**
-     * @param string $locale
-     * @param string $entityUri
-     * @param array  $columns
-     * @param int    $limit
-     * @param int    $page
-     * @return \stdClass
      * @throws GuzzleException
-     * @throws \Exception
      */
-    public function all(string $locale, string $entityUri, array $columns, int $limit = 25, int $page = 1,): \stdClass
+    public function all(string $locale): Collection
     {
-        $offset          = $limit * $page;
-        $combinedColumns = implode(',', $columns);
-        $result          = json_decode($this->get("{$locale}/{$entityUri}?offset={$offset}&limit={$limit}&extended=true&columns={$combinedColumns}")
-            ->getBody()
-            ->getContents());
-
-        $totalPages = ceil($result->info->count / $limit) - 1;
-
-        if ($page > $totalPages) {
-            throw new \Exception("You have exceeded the offset of the pages. there are {$totalPages}, you have given {$page}", 400);
-        }
-
-        return $result;
+        return $this->getCollection("{$locale}/{$this->endpointSlug}", $this->modelClass, $locale);
     }
 
     /**
@@ -141,7 +122,7 @@ abstract class ErgonodeObjectApiAbstract
     /**
      * @throws GuzzleException
      */
-    private function get(string $uri, ?array $options = null): ResponseInterface
+    protected function get(string $uri, ?array $options = null): ResponseInterface
     {
         $options = $this->getHttpRequestOptions($options);
 
