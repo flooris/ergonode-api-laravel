@@ -2,6 +2,8 @@
 
 namespace Flooris\ErgonodeApi\Attributes;
 
+use Illuminate\Support\Collection;
+
 class ProductListItemModel
 {
     private ProductListClient $client;
@@ -9,15 +11,17 @@ class ProductListItemModel
     public \stdClass $responseObject;
     public string $id;
     public string $sku;
-    public int $index;
+    public array $attributes;
+    private Collection $attributeOptions;
 
     public function __construct(ProductListClient $client, \stdClass $responseObject, string $locale)
     {
-        $this->client         = $client;
-        $this->locale         = $locale;
-        $this->responseObject = $responseObject;
-        $this->id             = $responseObject->id;
-        $this->sku            = $responseObject->sku;
-        $this->index          = (int)$responseObject->index;
+        $this->client             = $client;
+        $this->responseObject     = $responseObject;
+        $this->locale             = $locale;
+        $this->id                 = $responseObject->id->value;
+        $this->sku                = $responseObject->sku->value;
+        $this->attributes         = json_decode(json_encode($responseObject), true);
+        $this->attributeOptions   = collect();
     }
 }

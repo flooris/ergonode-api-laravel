@@ -30,8 +30,4 @@ class AttributeClient extends ErgonodeObjectApiAbstract
         return $this->model;
     }
 
-    public function option($locale, $attributeCode, $optionCode)
-    {
-        return $this->getAttributeOption($locale,$attributeCode, $optionCode);
-    }
 }

@@ -69,4 +69,9 @@ class ProductListClient extends ErgonodeObjectApiAbstract
 
         return $this->items;
     }
+
+    public function columnsOverview(): Collection
+    {
+        return $this->columns;
+    }
 }
