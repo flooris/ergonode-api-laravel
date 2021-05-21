@@ -6,6 +6,7 @@ use GuzzleHttp\Client;
 use Flooris\ErgonodeApi\Attributes\ProductClient;
 use Flooris\ErgonodeApi\Attributes\TemplateClient;
 use Flooris\ErgonodeApi\Attributes\AttributeClient;
+use Flooris\ErgonodeApi\Attributes\ProductListClient;
 
 class ErgonodeApi
 {
@@ -26,6 +27,11 @@ class ErgonodeApi
     public function products(): ProductClient
     {
         return new ProductClient($this);
+    }
+
+    public function productsList(): ProductListClient
+    {
+        return new ProductListClient($this);
     }
 
     public function templates(): TemplateClient

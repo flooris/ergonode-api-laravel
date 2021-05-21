@@ -29,4 +29,5 @@ class AttributeClient extends ErgonodeObjectApiAbstract
     {
         return $this->model;
     }
+
 }
