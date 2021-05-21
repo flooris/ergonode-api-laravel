@@ -176,7 +176,7 @@ abstract class ErgonodeObjectApiAbstract
     /**
      * @throws GuzzleException
      */
-    private function get(string $uri, ?array $options = null): ResponseInterface
+    protected function get(string $uri, ?array $options = null): ResponseInterface
     {
         $options = $this->getHttpRequestOptions($options);
 
@@ -318,5 +318,4 @@ abstract class ErgonodeObjectApiAbstract
 
         return $options;
     }
-
 }
