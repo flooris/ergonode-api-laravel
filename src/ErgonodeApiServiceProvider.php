@@ -10,7 +10,7 @@ class ErgonodeApiServiceProvider extends ServiceProvider
     {
         $this->publishes([
             __DIR__.'/../config/ergonode.php' => config_path('ergonode.php'),
-        ], 'ergonode-api');
+        ], 'ergonode-api-laravel');
     }
 
     public function register()
