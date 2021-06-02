@@ -17,9 +17,7 @@ class MultimediaClient extends ErgonodeObjectApiAbstract
 
     public function findImage(string $id, $locale = "en_GB")
     {
-        $foundImage = $this->find($locale, $id);
-
-        return (bool)$foundImage;
+        return (bool)$this->find($locale, $id);
     }
 
     public function updateImage(string $id, array $imageData, $locale = "en_GB"): bool
@@ -33,7 +31,6 @@ class MultimediaClient extends ErgonodeObjectApiAbstract
     {
         $uploadedImage = $this->upload("upload", $imageData);
         $this->findImage($uploadedImage->id, $locale);
-
         return (bool)$uploadedImage;
     }
 }
