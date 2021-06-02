@@ -2,33 +2,34 @@
 
 namespace Flooris\ErgonodeApi\Attributes;
 
+use JsonException;
 use Flooris\ErgonodeApi\ErgonodeApi;
+use GuzzleHttp\Exception\GuzzleException;
 use Flooris\ErgonodeApi\ErgonodeObjectApiAbstract;
 
 class TemplateClient extends ErgonodeObjectApiAbstract
 {
-    const ENDPOINT = 'templates';
+    public const ENDPOINT = 'templates';
 
-    public function __construct(ErgonodeApi $connector)
+    public function __construct(ErgonodeApi $connector, ?string $modelClass = null)
     {
-        return parent::__construct(
+        parent::__construct(
             $connector,
-            TemplateClient::ENDPOINT,
-            TemplateModel::class
+            static::ENDPOINT,
+            $modelClass ?? TemplateModel::class
         );
     }
 
-    public function findByName(string $locale, string $name)
+    /**
+     * @throws GuzzleException
+     * @throws JsonException
+     */
+    public function findByName(string $name): ?TemplateModel
     {
-        $itemCollection = $this->filter($locale, "name={$name}");
+        $itemCollection = $this->filter("name={$name}");
 
         $this->model = $itemCollection->first();
 
-        return (bool)$this->model;
-    }
-
-    public function model(): ?TemplateModel
-    {
         return $this->model;
     }
 }

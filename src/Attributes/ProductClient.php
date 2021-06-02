@@ -2,33 +2,34 @@
 
 namespace Flooris\ErgonodeApi\Attributes;
 
+use JsonException;
 use Flooris\ErgonodeApi\ErgonodeApi;
+use GuzzleHttp\Exception\GuzzleException;
 use Flooris\ErgonodeApi\ErgonodeObjectApiAbstract;
 
 class ProductClient extends ErgonodeObjectApiAbstract
 {
-    const ENDPOINT = 'products';
+    public const ENDPOINT = 'products';
 
-    public function __construct(ErgonodeApi $connector)
+    public function __construct(ErgonodeApi $connector, ?string $modelClass = null)
     {
-        return parent::__construct(
+        parent::__construct(
             $connector,
-            ProductClient::ENDPOINT,
-            ProductModel::class
+            static::ENDPOINT,
+            $modelClass ?? ProductModel::class
         );
     }
 
-    public function findBySku(string $locale, string $sku): bool
+    /**
+     * @throws GuzzleException
+     * @throws JsonException
+     */
+    public function findBySku(string $sku): ?ProductModel
     {
-        $itemCollection = $this->filter($locale, "sku={$sku}");
+        $itemCollection = $this->filter("sku={$sku}");
 
         $this->model = $itemCollection->where('sku', $sku)->first();
 
-        return (bool)$this->model;
-    }
-
-    public function model(): ?ProductModel
-    {
         return $this->model;
     }
 }

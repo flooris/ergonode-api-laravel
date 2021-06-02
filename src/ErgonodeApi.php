@@ -13,30 +13,30 @@ class ErgonodeApi
     private ClientAuthenticator $clientAuthenticator;
     private Client $httpClient;
 
-    public function __construct(string $hostname, string $username, string $password, ?array $httpClientConfig = null)
+    public function __construct(private string $locale, string $hostname, string $username, string $password, ?array $httpClientConfig = null)
     {
         $this->setHttpClient($hostname, $httpClientConfig);
         $this->loginHttpClient($this->httpClient, $username, $password);
     }
 
-    public function attributes(): AttributeClient
+    public function attributes(string $modelClass): AttributeClient
     {
-        return new AttributeClient($this);
+        return new AttributeClient($this, $modelClass);
     }
 
-    public function products(): ProductClient
+    public function products(string $modelClass): ProductClient
     {
-        return new ProductClient($this);
+        return new ProductClient($this, $modelClass);
     }
 
-    public function productsList(): ProductListClient
+    public function productsList(string $modelClass): ProductListClient
     {
-        return new ProductListClient($this);
+        return new ProductListClient($this, $modelClass);
     }
 
-    public function templates(): TemplateClient
+    public function templates(string $modelClass): TemplateClient
     {
-        return new TemplateClient($this);
+        return new TemplateClient($this, $modelClass);
     }
 
     public function getHttpClient(): Client
@@ -49,6 +49,11 @@ class ErgonodeApi
         return $this->clientAuthenticator;
     }
 
+    public function getLocale(): string
+    {
+        return $this->locale;
+    }
+
     private function setHttpClient(string $hostname, ?array $httpClientConfig = null)
     {
         if (! $httpClientConfig) {
@@ -57,10 +62,10 @@ class ErgonodeApi
 
         $httpClientConfig['base_uri'] = $hostname;
 
-        $this->httpClient = new \GuzzleHttp\Client($httpClientConfig);
+        $this->httpClient = new Client($httpClientConfig);
     }
 
-    private function loginHttpClient(\GuzzleHttp\Client $client, string $username, string $password)
+    private function loginHttpClient(Client $client, string $username, string $password)
     {
         $this->clientAuthenticator = new ClientAuthenticator($client);
         $this->clientAuthenticator->authenticate($username, $password);

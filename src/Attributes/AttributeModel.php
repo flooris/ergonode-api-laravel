@@ -2,49 +2,58 @@
 
 namespace Flooris\ErgonodeApi\Attributes;
 
+use JsonException;
 use Illuminate\Support\Collection;
+use Flooris\ErgonodeApi\ErgonodeApi;
+use GuzzleHttp\Exception\GuzzleException;
 
-class AttributeModel
+class AttributeModel extends ErgonodeAbstractModel
 {
-    private AttributeClient $client;
-    public string $locale;
-    public \stdClass $responseObject;
-    public string $id;
-    public string $code;
-    public string $label;
+    public ?string $id;
+    public ?string $code;
+    public ?string $label;
     public array $groups;
 
-    public function __construct(AttributeClient $client, \stdClass $responseObject, string $locale)
+    protected function handleResponseObject(): void
     {
-        $this->client         = $client;
-        $this->responseObject = $responseObject;
-        $this->locale         = $locale;
-        $this->id             = $responseObject->id;
-        $this->code           = $responseObject->code;
-        $this->groups         = $responseObject->groups;
+            $this->id             = $this->responseObject?->id;
+            $this->code           = $this->responseObject?->code;
+            $this->groups         = $this->responseObject?->groups ?? [];
 
-        if (is_array($responseObject->label)) {
-            $this->label = $responseObject->label[$locale] ?? '';
-        } else if (is_object($responseObject->label)) {
-            $this->label = $responseObject->label->$locale ?? '';
-        } else {
-            $this->label = $responseObject->label;
-        }
+            if (is_array($this->responseObject?->label)) {
+                $this->label = $this->responseObject->label[$this->locale] ?? '';
+            } else if (is_object($this->responseObject?->label)) {
+                $this->label = $this->responseObject->label->locale ?? '';
+            } else {
+                $this->label = $this->responseObject?->label;
+            }
+    }
+
+    public function resolveErgonodeClient(): AttributeClient
+    {
+        return app(ErgonodeApi::class)->attributes(static::class);
     }
 
     public function getAttributeOptionClient(): AttributeOptionClient
     {
-        return new AttributeOptionClient($this->client->getErgonodeApi(), $this);
+        return new AttributeOptionClient($this->getErgonodeClient()->getErgonodeApi(), $this);
     }
 
-    public function options(string $locale): Collection
+    /**
+     * @throws GuzzleException
+     * @throws JsonException
+     */
+    public function options(): Collection
     {
         $attributeOptionClient = $this->getAttributeOptionClient();
 
-        return $attributeOptionClient->all($locale);
+        return $attributeOptionClient->all();
     }
 
-    public function createOption($code, $labelTranslations)
+    /**
+     * @throws GuzzleException
+     */
+    public function createOption($code, $labelTranslations): void
     {
         $body = [
             'code'  => $code,
@@ -52,6 +61,6 @@ class AttributeModel
         ];
 
         $attributeOptionClient = $this->getAttributeOptionClient();
-        $attributeOptionClient->create($this->locale, $body);
+        $attributeOptionClient->create($body);
     }
 }
