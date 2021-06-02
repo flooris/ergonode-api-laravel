@@ -46,7 +46,7 @@ class ProductListClient extends ErgonodeObjectApiAbstract
                 'columns'  => implode(',', $columns),
                 'filter'   => $filter,
             ];
-            $requestUri    = "{$baseUri}?" . http_build_query($requestParams);
+            $requestUri    = "$baseUri?" . http_build_query($requestParams);
 
             $result = json_decode($this->get($requestUri)
                 ->getBody()

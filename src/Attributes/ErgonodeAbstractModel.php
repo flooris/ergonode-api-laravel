@@ -16,7 +16,10 @@ abstract class ErgonodeAbstractModel implements ErgonodeModel
         }
 
         $this->locale = $this->ergonodeClient->getLocale();
-        $this->handleResponseObject();
+
+        if ($responseObject && !empty((array)$responseObject)) {
+            $this->handleResponseObject();
+        }
     }
 
     abstract protected function resolveErgonodeClient(): ErgonodeClient;

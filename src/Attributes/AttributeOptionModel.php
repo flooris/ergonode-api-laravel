@@ -17,9 +17,9 @@ class AttributeOptionModel extends ErgonodeAbstractChildModel
      */
     protected function handleResponseObject(): void
     {
-        $this->id    = $this->responseObject?->id;
-        $this->code  = $this->responseObject?->code;
-        $this->label = $this->responseObject?->label ? json_decode(json_encode($this->responseObject->label, JSON_THROW_ON_ERROR), true, 512, JSON_THROW_ON_ERROR) : [];
+        $this->id    = $this->responseObject->id;
+        $this->code  = $this->responseObject->code;
+        $this->label = json_decode(json_encode($this->responseObject->label ?? [], JSON_THROW_ON_ERROR), true, 512, JSON_THROW_ON_ERROR);
     }
 
     public function resolveErgonodeClient(): AttributeOptionClient
