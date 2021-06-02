@@ -23,52 +23,43 @@ class ProductListClient extends ErgonodeObjectApiAbstract
     }
 
     /**
-     * @param array       $columns
-     * @param string|null $filter
-     * @return Collection
      * @throws GuzzleException
      * @throws JsonException
      */
-    public function productsOverview(array $columns, ?string $filter = null): Collection
+    public function productsOverview(array $columns, int $page = 0, int $limit = 25, ?string $filter = null, ?string $sortField = null, ?string $sortOrder = null): Collection
     {
-        $page        = 0;
-        $offset      = 0;
-        $limit       = 25;
-        $result      = null;
+        $offset      = ($page > 0 ? ($limit * $page) : 0);
         $baseUri     = "{$this->getLocale()}/" . ProductClient::ENDPOINT;
         $this->items = collect();
 
-        while ($result || $page === 0) {
-            $requestParams = [
-                'offset'   => $offset,
-                'limit'    => $limit,
-                'extended' => true,
-                'columns'  => implode(',', $columns),
-                'filter'   => $filter,
-            ];
-            $requestUri    = "$baseUri?" . http_build_query($requestParams);
+        $requestParams = [
+            'offset'   => $offset,
+            'limit'    => $limit,
+            'extended' => true,
+            'columns'  => implode(',', $columns),
+            'filter'   => $filter,
+            'field'    => $sortField,
+            'order'    => $sortOrder,
+        ];
+        $requestUri    = "$baseUri?" . http_build_query($requestParams);
 
-            $result = json_decode($this->get($requestUri)
-                ->getBody()
-                ->getContents(),  false, 512, JSON_THROW_ON_ERROR);
+        $result = json_decode($this->get($requestUri)
+            ->getBody()
+            ->getContents(), false, 512, JSON_THROW_ON_ERROR);
 
-            $filteredCount = (int)$result->info->filtered;
-            $offset        = $limit * $page++;
+        $filteredCount = (int)$result->info->filtered;
 
-            if (! $filteredCount || ! $result->collection) {
-                $result = null;
-            }
-
-            if ($result) {
-                $this->columns = collect($result->columns);
-
-                foreach ($result->collection as $item) {
-                    $this->items->push((new ProductModel($item)));
-                }
-            }
+        if (! $filteredCount || ! $result->collection) {
+            $result = null;
         }
 
-        return $this->items;
+        if ($result) {
+            $this->columns = collect($result->columns);
+
+            foreach ($result->collection as $item) {
+                $this->items->push((new ProductModel($this, $item)));
+            }
+        }
     }
 
     public function columnsOverview(): Collection
