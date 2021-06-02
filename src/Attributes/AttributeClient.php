@@ -2,32 +2,32 @@
 
 namespace Flooris\ErgonodeApi\Attributes;
 
+use JsonException;
 use Flooris\ErgonodeApi\ErgonodeApi;
+use GuzzleHttp\Exception\GuzzleException;
 use Flooris\ErgonodeApi\ErgonodeObjectApiAbstract;
 
 class AttributeClient extends ErgonodeObjectApiAbstract
 {
-    const ENDPOINT = 'attributes';
+    public const ENDPOINT = 'attributes';
 
-    public function __construct(ErgonodeApi $connector)
+    public function __construct(ErgonodeApi $connector, ?string $modelClass = null)
     {
-        return parent::__construct(
+        parent::__construct(
             $connector,
-            AttributeClient::ENDPOINT,
-            AttributeModel::class
+            static::ENDPOINT,
+            $modelClass ?? AttributeModel::class
         );
     }
 
-    public function findByCode(string $locale, string $code): bool
+    /**
+     * @throws GuzzleException
+     * @throws JsonException
+     */
+    public function findByCode(string $code): ?AttributeModel
     {
-        $this->model = $this->all($locale)->where('code', $code)->first();
+        $this->model = $this->all()->where('code', $code)->first();
 
-        return (bool)$this->model;
-    }
-
-    public function model(): ?AttributeModel
-    {
         return $this->model;
     }
-
 }

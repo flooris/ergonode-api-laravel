@@ -2,23 +2,21 @@
 
 namespace Flooris\ErgonodeApi;
 
+use Exception;
+use JsonException;
 use GuzzleHttp\RequestOptions;
 use Illuminate\Support\Collection;
 use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\Exception\GuzzleException;
+use Flooris\ErgonodeApi\Attributes\ErgonodeClient;
+use Flooris\ErgonodeApi\Attributes\ErgonodeModel;
 
-abstract class ErgonodeObjectApiAbstract
+abstract class ErgonodeObjectApiAbstract implements ErgonodeClient
 {
-    private ErgonodeApi $ergonodeApi;
-    private string $endpointSlug;
-    private string $modelClass;
-    public $model;
+    public ?ErgonodeModel $model;
 
-    public function __construct(ErgonodeApi $connector, string $endpointSlug, string $modelClass)
+    public function __construct(private ErgonodeApi $ergonodeApi, private string $endpointSlug, private string $modelClass)
     {
-        $this->ergonodeApi  = $connector;
-        $this->endpointSlug = $endpointSlug;
-        $this->modelClass   = $modelClass;
     }
 
     public function getErgonodeApi(): ErgonodeApi
@@ -26,28 +24,45 @@ abstract class ErgonodeObjectApiAbstract
         return $this->ergonodeApi;
     }
 
-    /**
-     * @throws GuzzleException
-     */
-    public function find(string $locale, string $id): bool
+    public function getLocale(): string
     {
-        $this->model = $this->getModel("{$locale}/{$this->endpointSlug}/{$id}", $this->modelClass, $locale);
-
-        return (bool)$this->model;
+        return $this->ergonodeApi->getLocale();
     }
 
     /**
-     * @throws GuzzleException
+     * @throws GuzzleException|JsonException
      */
-    public function all(string $locale): Collection
+    public function find(string $id): ?ErgonodeModel
     {
-        return $this->getCollection("{$locale}/{$this->endpointSlug}", $this->modelClass, $locale);
+        $this->model = $this->getModel("{$this->getLocale()}/$this->endpointSlug/$id", $this->modelClass);
+
+        return $this->model;
     }
 
     /**
-     * @throws GuzzleException
+     * @throws GuzzleException|JsonException
      */
-    public function filter(string $locale, string $searchQuery): Collection
+    public function firstWhere(string $key, mixed $value): ?ErgonodeModel
+    {
+        $itemCollection = $this->filter("$key=$value");
+
+        $this->model = $itemCollection->where($key, $value)->first();
+
+        return $this->model;
+    }
+
+    /**
+     * @throws GuzzleException|JsonException
+     */
+    public function all(): Collection
+    {
+        return $this->getCollection("{$this->getLocale()}/$this->endpointSlug", $this->modelClass);
+    }
+
+    /**
+     * @throws GuzzleException|JsonException
+     */
+    public function filter(string $searchQuery): Collection
     {
         $options = [
             RequestOptions::QUERY => [
@@ -55,10 +70,13 @@ abstract class ErgonodeObjectApiAbstract
             ],
         ];
 
-        return $this->getCollectionByIndex("{$locale}/{$this->endpointSlug}", $this->modelClass, $locale, $options);
+        return $this->getCollectionByIndex("{$this->getLocale()}/$this->endpointSlug", $this->modelClass, $options);
     }
 
-    public function create(string $locale, array $body): bool
+    /**
+     * @throws GuzzleException
+     */
+    public function create(array $body): bool
     {
         $options = [
             RequestOptions::JSON => $body,
@@ -66,12 +84,15 @@ abstract class ErgonodeObjectApiAbstract
 
         $options = $this->getHttpRequestOptions($options);
 
-        $this->getErgonodeApi()->getHttpClient()->post("{$locale}/{$this->endpointSlug}", $options);
+        $this->getErgonodeApi()->getHttpClient()->post("{$this->getLocale()}/$this->endpointSlug", $options);
 
         return true;
     }
 
-    public function update(string $locale, string $id, array $body): bool
+    /**
+     * @throws GuzzleException
+     */
+    public function update(string $id, array $body): bool
     {
         $options = [
             RequestOptions::JSON => $body,
@@ -79,12 +100,15 @@ abstract class ErgonodeObjectApiAbstract
 
         $options = $this->getHttpRequestOptions($options);
 
-        $this->getErgonodeApi()->getHttpClient()->put("{$locale}/{$this->endpointSlug}/{$id}", $options);
+        $this->getErgonodeApi()->getHttpClient()->put("{$this->getLocale()}/$this->endpointSlug/$id", $options);
 
         return true;
     }
 
-    public function append(string $locale, string $entityUri, array $body): bool
+    /**
+     * @throws GuzzleException
+     */
+    public function append(string $entityUri, array $body): bool
     {
         $options = [
             RequestOptions::JSON => $body,
@@ -92,11 +116,17 @@ abstract class ErgonodeObjectApiAbstract
 
         $options = $this->getHttpRequestOptions($options);
 
-        $this->getErgonodeApi()->getHttpClient()->patch("{$locale}/{$this->endpointSlug}/{$entityUri}", $options);
+        $this->getErgonodeApi()
+            ->getHttpClient()
+            ->patch("{$this->getLocale()}/$this->endpointSlug/$entityUri", $options);
 
         return true;
     }
 
+    /**
+     * @throws GuzzleException
+     * @throws Exception
+     */
     public function upload(string $entityUri, array $imageData)
     {
         $options = [
@@ -113,8 +143,12 @@ abstract class ErgonodeObjectApiAbstract
         $options = $this->getHttpRequestOptions($options);
 
         try {
-            return $response = json_decode($this->getErgonodeApi()->getHttpClient()->post("{$entityUri}", $options)->getBody()->getContents());
-        }catch (\Exception $exception){
+            return json_decode($this->getErgonodeApi()
+                ->getHttpClient()
+                ->post($entityUri, $options)
+                ->getBody()
+                ->getContents(), false, 512, JSON_THROW_ON_ERROR);
+        } catch (Exception $exception) {
             throw $exception;
         }
     }
@@ -132,22 +166,16 @@ abstract class ErgonodeObjectApiAbstract
     }
 
     /**
-     * @throws GuzzleException
+     * @throws GuzzleException|JsonException
      */
-    private function getModel(string $uri, string $modelClass, string $locale, ?array $options = null)
+    private function getModel(string $uri, string $modelClass, ?array $options = null): ?ErgonodeModel
     {
         try {
-            $responseObject = json_decode(
-                $this->get($uri, $options)
-                    ->getBody()
-                    ->getContents()
-            );
+            $responseObject = json_decode($this->get($uri, $options)
+                ->getBody()
+                ->getContents(), false, 512, JSON_THROW_ON_ERROR);
 
-            return new $modelClass(
-                client: $this,
-                responseObject: $responseObject,
-                locale: $locale
-            );
+            return new $modelClass($this, $responseObject);
 
         } catch (GuzzleException $exception) {
             if ($exception->getCode() === 404) {
@@ -161,15 +189,14 @@ abstract class ErgonodeObjectApiAbstract
 
     /**
      * @throws GuzzleException
+     * @throws JsonException
      */
-    private function getCollectionByIndex(string $uri, string $modelClass, string $locale, ?array $options = null): Collection
+    private function getCollectionByIndex(string $uri, string $modelClass, ?array $options = null): Collection
     {
         $collection   = collect();
-        $responseData = json_decode(
-            $this->get($uri, $options)
-                ->getBody()
-                ->getContents()
-        );
+        $responseData = json_decode($this->get($uri, $options)
+            ->getBody()
+            ->getContents(), false, 512, JSON_THROW_ON_ERROR);
 
         $items = [];
 
@@ -180,17 +207,11 @@ abstract class ErgonodeObjectApiAbstract
         }
 
         foreach ($items as $responseObject) {
-            $responseObjectDetail = json_decode(
-                $this->get("{$uri}/{$responseObject->id}")
-                    ->getBody()
-                    ->getContents()
-            );
+            $responseObjectDetail = json_decode($this->get("$uri/$responseObject->id")
+                ->getBody()
+                ->getContents(), false, 512, JSON_THROW_ON_ERROR);
 
-            $collection = $collection->push((new $modelClass(
-                client: $this,
-                responseObject: $responseObjectDetail,
-                locale: $locale
-            )));
+            $collection = $collection->push((new $modelClass($this, $responseObjectDetail)));
         }
 
         return $collection;
@@ -198,15 +219,14 @@ abstract class ErgonodeObjectApiAbstract
 
     /**
      * @throws GuzzleException
+     * @throws JsonException
      */
-    private function getCollection(string $uri, string $modelClass, string $locale, ?array $options = null): Collection
+    private function getCollection(string $uri, string $modelClass, ?array $options = null): Collection
     {
         $collection   = collect();
-        $responseData = json_decode(
-            $this->get($uri, $options)
-                ->getBody()
-                ->getContents()
-        );
+        $responseData = json_decode($this->get($uri, $options)
+            ->getBody()
+            ->getContents(), false, 512, JSON_THROW_ON_ERROR);
 
         $items = [];
 
@@ -217,11 +237,7 @@ abstract class ErgonodeObjectApiAbstract
         }
 
         foreach ($items as $responseObject) {
-            $collection = $collection->push((new $modelClass(
-                client: $this,
-                responseObject: $responseObject,
-                locale: $locale
-            )));
+            $collection = $collection->push((new $modelClass($this, $responseObject)));
         }
 
         return $collection;
@@ -258,10 +274,15 @@ abstract class ErgonodeObjectApiAbstract
             $options[RequestOptions::DEBUG] = false;
         }
 
-        if (isset($options[RequestOptions::MULTIPART]) && isset($options[RequestOptions::HEADERS]['Content-Type'])){
+        if (isset($options[RequestOptions::MULTIPART], $options[RequestOptions::HEADERS]['Content-Type'])) {
             unset($options[RequestOptions::HEADERS]['Content-Type']);
         }
 
         return $options;
+    }
+
+    public function model(): ?ErgonodeModel
+    {
+        return $this->model;
     }
 }

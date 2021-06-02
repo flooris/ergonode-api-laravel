@@ -2,31 +2,32 @@
 
 namespace Flooris\ErgonodeApi\Attributes;
 
+use JsonException;
 use Flooris\ErgonodeApi\ErgonodeApi;
+use GuzzleHttp\Exception\GuzzleException;
 use Flooris\ErgonodeApi\ErgonodeObjectApiAbstract;
 
 class AttributeOptionClient extends ErgonodeObjectApiAbstract
 {
-    public function __construct(ErgonodeApi $connector, AttributeModel $attribute)
+    public function __construct(ErgonodeApi $connector, AttributeModel $attribute, ?string $modelClass = null)
     {
         $endpoint = "attributes/{$attribute->id}/options";
 
-        return parent::__construct(
+        parent::__construct(
             $connector,
             $endpoint,
-            AttributeOptionModel::class
+            $modelClass ?? AttributeOptionModel::class
         );
     }
 
-    public function findByCode(string $locale, string $code): bool
+    /**
+     * @throws GuzzleException
+     * @throws JsonException
+     */
+    public function findByCode(string $code): ?AttributeOptionModel
     {
-        $this->model = $this->all($locale)->where('code', $code)->first();
+        $this->model = $this->all()->where('code', $code)->first();
 
-        return (bool)$this->model;
-    }
-
-    public function model(): ?AttributeOptionModel
-    {
         return $this->model;
     }
 }
