@@ -6,6 +6,7 @@ use GuzzleHttp\Client;
 use Flooris\ErgonodeApi\Attributes\ProductClient;
 use Flooris\ErgonodeApi\Attributes\TemplateClient;
 use Flooris\ErgonodeApi\Attributes\AttributeClient;
+use Flooris\ErgonodeApi\Attributes\MultimediaClient;
 use Flooris\ErgonodeApi\Attributes\ProductListClient;
 
 class ErgonodeApi
@@ -22,6 +23,11 @@ class ErgonodeApi
     public function attributes(): AttributeClient
     {
         return new AttributeClient($this);
+    }
+
+    public function multiMedia(): MultimediaClient
+    {
+        return new MultimediaClient($this);
     }
 
     public function products(): ProductClient
