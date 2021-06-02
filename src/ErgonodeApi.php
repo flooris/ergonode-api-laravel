@@ -19,22 +19,22 @@ class ErgonodeApi
         $this->loginHttpClient($this->httpClient, $username, $password);
     }
 
-    public function attributes(string $modelClass): AttributeClient
+    public function attributes(?string $modelClass = null): AttributeClient
     {
         return new AttributeClient($this, $modelClass);
     }
 
-    public function products(string $modelClass): ProductClient
+    public function products(?string $modelClass = null): ProductClient
     {
         return new ProductClient($this, $modelClass);
     }
 
-    public function productsList(string $modelClass): ProductListClient
+    public function productsList(?string $modelClass = null): ProductListClient
     {
         return new ProductListClient($this, $modelClass);
     }
 
-    public function templates(string $modelClass): TemplateClient
+    public function templates(?string $modelClass = null): TemplateClient
     {
         return new TemplateClient($this, $modelClass);
     }
