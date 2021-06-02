@@ -16,16 +16,16 @@ class AttributeModel extends ErgonodeAbstractModel
 
     protected function handleResponseObject(): void
     {
-            $this->id             = $this->responseObject?->id;
-            $this->code           = $this->responseObject?->code;
-            $this->groups         = $this->responseObject?->groups ?? [];
+            $this->id             = $this->responseObject->id;
+            $this->code           = $this->responseObject->code;
+            $this->groups         = $this->responseObject->groups ?? [];
 
-            if (is_array($this->responseObject?->label)) {
+            if (is_array($this->responseObject->label)) {
                 $this->label = $this->responseObject->label[$this->locale] ?? '';
-            } else if (is_object($this->responseObject?->label)) {
+            } else if (is_object($this->responseObject->label)) {
                 $this->label = $this->responseObject->label->locale ?? '';
             } else {
-                $this->label = $this->responseObject?->label;
+                $this->label = $this->responseObject->label;
             }
     }
 

@@ -6,7 +6,6 @@ use stdClass;
 use JsonException;
 use Illuminate\Support\Collection;
 use Flooris\ErgonodeApi\ErgonodeApi;
-use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Contracts\Routing\UrlRoutable;
 
 class ProductModel extends ErgonodeAbstractModel implements UrlRoutable
@@ -32,11 +31,11 @@ class ProductModel extends ErgonodeAbstractModel implements UrlRoutable
      */
     protected function handleResponseObject(): void
     {
-        $this->id                 = $this->responseObject?->id;
-        $this->type               = $this->responseObject?->type;
-        $this->sku                = $this->responseObject?->sku;
-        $this->template_id        = $this->responseObject?->template_id;
-        $this->design_template_id = $this->responseObject?->design_template_id;
+        $this->id                 = $this->responseObject->id;
+        $this->type               = $this->responseObject->type;
+        $this->sku                = $this->responseObject->sku;
+        $this->template_id        = $this->responseObject->template_id;
+        $this->design_template_id = $this->responseObject->design_template_id;
         $this->attributes         = json_decode(
             json_encode($this->responseObject->attributes ?? [], JSON_THROW_ON_ERROR),
             true,

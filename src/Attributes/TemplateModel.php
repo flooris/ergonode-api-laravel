@@ -20,12 +20,10 @@ class TemplateModel extends ErgonodeAbstractModel
      */
     protected function handleResponseObject(): void
     {
-        if ($this->responseObject) {
-            $this->id             = $this->responseObject->id;
-            $this->name           = $this->responseObject->name;
-            $this->elements       = $this->responseObject->elements;
-            $this->setAttributes($this->locale, $this->elements);
-        }
+        $this->id       = $this->responseObject->id;
+        $this->name     = $this->responseObject->name;
+        $this->elements = $this->responseObject->elements;
+        $this->setAttributes($this->locale, $this->elements);
     }
 
     public function resolveErgonodeClient(): TemplateClient
