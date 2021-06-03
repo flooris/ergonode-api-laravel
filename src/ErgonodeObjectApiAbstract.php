@@ -15,7 +15,7 @@ abstract class ErgonodeObjectApiAbstract implements ErgonodeClient
 {
     public ?ErgonodeModel $model;
 
-    public function __construct(private ErgonodeApi $ergonodeApi, private string $endpointSlug, private string $modelClass)
+    public function __construct(private ErgonodeApi $ergonodeApi, private string $endpointSlug, protected string $modelClass)
     {
     }
 

@@ -31,11 +31,11 @@ class ProductModel extends ErgonodeAbstractModel implements UrlRoutable
      */
     protected function handleResponseObject(): void
     {
-        $this->id                 = $this->responseObject->id;
-        $this->type               = $this->responseObject->type;
-        $this->sku                = $this->responseObject->sku;
-        $this->template_id        = $this->responseObject->template_id;
-        $this->design_template_id = $this->responseObject->design_template_id;
+        $this->id                 = is_object($this->responseObject->id) ? $this->responseObject->id->value : $this->responseObject->id;
+        $this->type               = $this->responseObject->type ?? null;
+        $this->sku                = is_object($this->responseObject->sku) ? $this->responseObject->sku->value : $this->responseObject->sku;
+        $this->template_id        = $this->responseObject->template_id ?? null;
+        $this->design_template_id = $this->responseObject->design_template_id ?? null;
         $this->attributes         = json_decode(
             json_encode($this->responseObject->attributes ?? [], JSON_THROW_ON_ERROR),
             true,

@@ -57,9 +57,11 @@ class ProductListClient extends ErgonodeObjectApiAbstract
             $this->columns = collect($result->columns);
 
             foreach ($result->collection as $item) {
-                $this->items->push((new ProductModel($this, $item)));
+                $this->items->push((new $this->modelClass($this, $item)));
             }
         }
+
+        return $this->items;
     }
 
     public function columnsOverview(): Collection
