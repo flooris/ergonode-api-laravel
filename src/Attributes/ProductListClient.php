@@ -2,6 +2,7 @@
 
 namespace Flooris\ErgonodeApi\Attributes;
 
+use JsonException;
 use Illuminate\Support\Collection;
 use Flooris\ErgonodeApi\ErgonodeApi;
 use GuzzleHttp\Exception\GuzzleException;
@@ -12,28 +13,23 @@ class ProductListClient extends ErgonodeObjectApiAbstract
     public Collection $items;
     public Collection $columns;
 
-    public function __construct(ErgonodeApi $connector)
+    public function __construct(ErgonodeApi $connector, ?string $modelClass = null)
     {
-        return parent::__construct(
+        parent::__construct(
             $connector,
             ProductClient::ENDPOINT,
-            ProductListItemModel::class
+            $modelClass ?? ProductModel::class
         );
     }
 
     /**
-     * @param string      $locale
-     * @param array       $columns
-     * @param int         $page
-     * @param int         $limit
-     * @param string|null $filter
-     * @return Collection
      * @throws GuzzleException
+     * @throws JsonException
      */
-    public function productsOverview(string $locale, array $columns, $page = 0, $limit = 25, ?string $filter = null, ?string $sortField = null, ?string $sortOrder = null): Collection
+    public function productsOverview(array $columns, int $page = 0, int $limit = 25, ?string $filter = null, ?string $sortField = null, ?string $sortOrder = null): Collection
     {
         $offset      = ($page > 0 ? ($limit * $page) : 0);
-        $baseUri     = "{$locale}/" . ProductClient::ENDPOINT;
+        $baseUri     = "{$this->getLocale()}/" . ProductClient::ENDPOINT;
         $this->items = collect();
 
         $requestParams = [
@@ -45,11 +41,11 @@ class ProductListClient extends ErgonodeObjectApiAbstract
             'field'    => $sortField,
             'order'    => $sortOrder,
         ];
-        $requestUri    = "{$baseUri}?" . http_build_query($requestParams);
+        $requestUri    = "$baseUri?" . http_build_query($requestParams);
 
         $result = json_decode($this->get($requestUri)
             ->getBody()
-            ->getContents());
+            ->getContents(), false, 512, JSON_THROW_ON_ERROR);
 
         $filteredCount = (int)$result->info->filtered;
 
@@ -61,7 +57,7 @@ class ProductListClient extends ErgonodeObjectApiAbstract
             $this->columns = collect($result->columns);
 
             foreach ($result->collection as $item) {
-                $this->items->push((new ProductListItemModel($this, $item, $locale)));
+                $this->items->push((new $this->modelClass($this, $item)));
             }
         }
 

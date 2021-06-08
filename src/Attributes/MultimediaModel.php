@@ -4,7 +4,9 @@
 namespace Flooris\ErgonodeApi\Attributes;
 
 
-class MultimediaModel
+use Flooris\ErgonodeApi\ErgonodeApi;
+
+class MultimediaModel extends ErgonodeAbstractModel
 {
     private MultimediaClient $client;
     public string $locale;
@@ -12,12 +14,24 @@ class MultimediaModel
     public string $name;
     public string $extension;
 
-    public function __construct(MultimediaClient $client, \stdClass $responseObject, string $locale)
+    public function __construct(MultimediaClient $client, \stdClass $responseObject)
     {
-        $this->id        = $responseObject->id;
-        $this->client    = $client;
-        $this->locale    = $locale;
-        $this->name      = $responseObject->name;
-        $this->extension = $responseObject->extension;
+        parent::__construct($client, $responseObject);
+    }
+
+    protected function handleResponseObject(): void
+    {
+        if ($this->responseObject){
+            $this->id        = $this->responseObject->id;
+            $this->name      = $this->responseObject->name;
+            $this->extension = $this->responseObject->extension;
+        }
+        // TODO: Implement handleResponseObject() method.
+    }
+
+    protected function resolveErgonodeClient(): ErgonodeClient
+    {
+        // TODO: Implement resolveErgonodeClient() method.
+        return app(ErgonodeApi::class)->template(static::class);
     }
 }

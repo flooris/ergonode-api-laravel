@@ -2,31 +2,40 @@
 
 namespace Flooris\ErgonodeApi\Attributes;
 
+use JsonException;
 use Illuminate\Support\Collection;
+use Flooris\ErgonodeApi\ErgonodeApi;
+use GuzzleHttp\Exception\GuzzleException;
 
-class TemplateModel
+class TemplateModel extends ErgonodeAbstractModel
 {
-    private TemplateClient $client;
-    public string $locale;
-    public \stdClass $responseObject;
-    public string $id;
-    public string $name;
-    public array $elements;
+    public ?string $id;
+    public ?string $name;
+    public ?array $elements;
     public Collection $attributes;
 
-    public function __construct(TemplateClient $client, \stdClass $responseObject, string $locale)
+    /**
+     * @throws GuzzleException
+     * @throws JsonException
+     */
+    protected function handleResponseObject(): void
     {
-        $this->client         = $client;
-        $this->responseObject = $responseObject;
-        $this->locale         = $locale;
-        $this->id             = $responseObject->id;
-        $this->name           = $responseObject->name;
-        $this->elements       = $responseObject->elements;
-
-        $this->setAttributes($locale, $this->elements);
+        $this->id       = $this->responseObject->id;
+        $this->name     = $this->responseObject->name;
+        $this->elements = $this->responseObject->elements;
+        $this->setAttributes($this->locale, $this->elements);
     }
 
-    private function setAttributes(string $locale, array $elements)
+    public function resolveErgonodeClient(): TemplateClient
+    {
+        return app(ErgonodeApi::class)->templates(static::class);
+    }
+
+    /**
+     * @throws GuzzleException
+     * @throws JsonException
+     */
+    private function setAttributes(string $locale, array $elements): void
     {
         $this->attributes = collect();
         foreach ($elements as $element) {
@@ -36,8 +45,8 @@ class TemplateModel
 
             $attributeId = $element->properties->attribute_id;
 
-            $attributeClient = new AttributeClient($this->client->getErgonodeApi());
-            if ($attributeClient->find($locale, $attributeId)) {
+            $attributeClient = new AttributeClient($this->getErgonodeClient()->getErgonodeApi());
+            if ($attributeClient->find($attributeId)) {
                 $this->attributes->push($attributeClient->model());
             }
         }

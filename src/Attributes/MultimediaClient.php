@@ -22,7 +22,7 @@ class MultimediaClient extends ErgonodeObjectApiAbstract
 
     public function updateImage(string $id, array $imageData, $locale = "en_GB"): bool
     {
-        return (bool)$this->update($locale, $id, [
+        return (bool)$this->update($id, [
             'name' => $imageData['file_name'],
         ]);
     }

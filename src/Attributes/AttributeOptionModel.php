@@ -2,32 +2,38 @@
 
 namespace Flooris\ErgonodeApi\Attributes;
 
-class AttributeOptionModel
+use JsonException;
+use Flooris\ErgonodeApi\ErgonodeApi;
+use GuzzleHttp\Exception\GuzzleException;
+
+class AttributeOptionModel extends ErgonodeAbstractChildModel
 {
-    private AttributeOptionClient $client;
-    public string $locale;
-    public \stdClass $responseObject;
-    public string $id;
-    public string $code;
+    public ?string $id;
+    public ?string $code;
     public array $label;
 
-    public function __construct(AttributeOptionClient $client, \stdClass $responseObject, string $locale)
+    /**
+     * @throws JsonException
+     */
+    protected function handleResponseObject(): void
     {
-        $this->client         = $client;
-        $this->responseObject = $responseObject;
-        $this->locale         = $locale;
-        $this->id             = $responseObject->id;
-        $this->code           = $responseObject->code;
-        $this->label          = json_decode(json_encode($responseObject->label), true);
+        $this->id    = $this->responseObject->id;
+        $this->code  = $this->responseObject->code;
+        $this->label = json_decode(json_encode($this->responseObject->label ?? [], JSON_THROW_ON_ERROR), true, 512, JSON_THROW_ON_ERROR);
     }
 
-    public function update()
+    public function resolveErgonodeClient(): AttributeOptionClient
+    {
+        return new AttributeOptionClient($this->parentModel->getErgonodeClient()->getErgonodeApi(), $this->parentModel, static::class);
+    }
+
+    public function update(): void
     {
         $body = [
             'code'  => $this->code,
             'label' => $this->label,
         ];
 
-        $this->client->update($this->locale, $this->id, $body);
+        $this->getErgonodeClient()->update($this->id, $body);
     }
 }

@@ -30,7 +30,7 @@ class ErgonodeApi
         return new MultimediaClient($this);
     }
 
-    public function products(): ProductClient
+    public function products(?string $modelClass = null): ProductClient
     {
         return new ProductClient($this);
     }
@@ -53,6 +53,11 @@ class ErgonodeApi
     public function getAuthenticator(): ClientAuthenticator
     {
         return $this->clientAuthenticator;
+    }
+
+    public function getLocale(): string
+    {
+        return $this->locale;
     }
 
     private function setHttpClient(string $hostname, ?array $httpClientConfig = null)

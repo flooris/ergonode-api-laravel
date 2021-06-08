@@ -2,41 +2,59 @@
 
 namespace Flooris\ErgonodeApi\Attributes;
 
+use stdClass;
+use JsonException;
 use Illuminate\Support\Collection;
+use Flooris\ErgonodeApi\ErgonodeApi;
+use Illuminate\Contracts\Routing\UrlRoutable;
 
-class ProductModel
+class ProductModel extends ErgonodeAbstractModel implements UrlRoutable
 {
-    private ProductClient $client;
-    public string $locale;
-    public \stdClass $responseObject;
-    public string $id;
-    public string $type;
-    public string $sku;
-    public string $template_id;
-    public string $design_template_id;
+    protected string $primaryKey = 'id';
+
+    public ?string $id;
+    public ?string $type;
+    public ?string $sku;
+    public ?string $template_id;
+    public ?string $design_template_id;
     public array $attributes;
     private Collection $attributeOptions;
 
-    public function __construct(ProductClient $client, \stdClass $responseObject, string $locale)
+    public function __construct(?ErgonodeClient $ergonodeClient = null, ?stdClass $responseObject = null)
     {
-        $this->client             = $client;
-        $this->responseObject     = $responseObject;
-        $this->locale             = $locale;
-        $this->id                 = $responseObject->id;
-        $this->type               = $responseObject->type;
-        $this->sku                = $responseObject->sku;
-        $this->template_id        = $responseObject->template_id;
-        $this->design_template_id = $responseObject->design_template_id;
-        $this->attributes         = json_decode(json_encode($responseObject->attributes), true);
-        $this->attributeOptions   = collect();
+        parent::__construct($ergonodeClient, $responseObject);
+        $this->attributeOptions = collect();
     }
 
-    public function template(): TemplateModel
+    /**
+     * @throws JsonException
+     */
+    protected function handleResponseObject(): void
     {
-        $templateClient = new TemplateClient($this->client->getErgonodeApi());
-        $templateClient->find($this->locale, $this->template_id);
+        $this->id                 = is_object($this->responseObject->id) ? $this->responseObject->id->value : $this->responseObject->id;
+        $this->type               = $this->responseObject->type ?? null;
+        $this->sku                = is_object($this->responseObject->sku) ? $this->responseObject->sku->value : $this->responseObject->sku;
+        $this->template_id        = $this->responseObject->template_id ?? null;
+        $this->design_template_id = $this->responseObject->design_template_id ?? null;
+        $this->attributes         = json_decode(
+            json_encode($this->responseObject->attributes ?? [], JSON_THROW_ON_ERROR),
+            true,
+            512,
+            JSON_THROW_ON_ERROR
+        );
+    }
 
-        return $templateClient->model();
+    public function resolveErgonodeClient(): ProductClient
+    {
+        return app(ErgonodeApi::class)->products(static::class);
+    }
+
+    public function template(): ?TemplateModel
+    {
+        return $this->getErgonodeClient()
+            ->getErgonodeApi()
+            ->templates()
+            ->find($this->locale, $this->template_id);
     }
 
     public function addAttribute(AttributeModel $attribute, ?AttributeOptionModel $attributeOption, string $label, string $locale = 'en_GB'): void
@@ -87,6 +105,41 @@ class ProductModel
             'payload' => $attributes,
         ];
 
-        $this->client->append($this->locale, 'attributes', $body);
+        $this->getErgonodeClient()->append( 'attributes', $body);
+    }
+
+    public function getKeyName(): string
+    {
+        return $this->primaryKey;
+    }
+
+    public function getKey(): mixed
+    {
+        return $this->getAttribute($this->getKeyName());
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return $this->getKeyName();
+    }
+
+    public function getRouteKey(): mixed
+    {
+        return $this->getAttribute($this->getRouteKeyName());
+    }
+
+    public function getAttribute($key): mixed
+    {
+        return $this->{$key} ?? null;
+    }
+
+    public function resolveRouteBinding(mixed $value, $field = null): ?static
+    {
+        return $this->getErgonodeClient()->firstWhere($field ?? $this->getRouteKeyName(), $value);
+    }
+
+    public function resolveChildRouteBinding($childType, $value, $field): void
+    {
+
     }
 }
