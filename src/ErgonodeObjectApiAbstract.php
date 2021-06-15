@@ -141,11 +141,11 @@ abstract class ErgonodeObjectApiAbstract implements ErgonodeClient
         ];
 
         $options = $this->getHttpRequestOptions($options);
-
+        $requestUrl = "/api/v1/{$this->endpointSlug}/{$entityUri}";
         try {
             return json_decode($this->getErgonodeApi()
                 ->getHttpClient()
-                ->post($entityUri, $options)
+                ->post($requestUrl, $options)
                 ->getBody()
                 ->getContents(), false, 512, JSON_THROW_ON_ERROR);
         } catch (Exception $exception) {
@@ -274,7 +274,7 @@ abstract class ErgonodeObjectApiAbstract implements ErgonodeClient
             $options[RequestOptions::DEBUG] = false;
         }
 
-        if (isset($options[RequestOptions::MULTIPART], $options[RequestOptions::HEADERS]['Content-Type'])) {
+        if (isset($options[RequestOptions::MULTIPART]) && isset($options[RequestOptions::HEADERS]['Content-Type'])){
             unset($options[RequestOptions::HEADERS]['Content-Type']);
         }
 

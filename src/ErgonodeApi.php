@@ -6,6 +6,7 @@ use GuzzleHttp\Client;
 use Flooris\ErgonodeApi\Attributes\ProductClient;
 use Flooris\ErgonodeApi\Attributes\TemplateClient;
 use Flooris\ErgonodeApi\Attributes\AttributeClient;
+use Flooris\ErgonodeApi\Attributes\MultimediaClient;
 use Flooris\ErgonodeApi\Attributes\ProductListClient;
 
 class ErgonodeApi
@@ -13,30 +14,35 @@ class ErgonodeApi
     private ClientAuthenticator $clientAuthenticator;
     private Client $httpClient;
 
-    public function __construct(private string $locale, string $hostname, string $username, string $password, ?array $httpClientConfig = null)
+    public function __construct(string $hostname, string $username, string $password, ?array $httpClientConfig = null)
     {
         $this->setHttpClient($hostname, $httpClientConfig);
         $this->loginHttpClient($this->httpClient, $username, $password);
     }
 
-    public function attributes(?string $modelClass = null): AttributeClient
+    public function attributes(): AttributeClient
     {
-        return new AttributeClient($this, $modelClass);
+        return new AttributeClient($this);
+    }
+
+    public function multiMedia(): MultimediaClient
+    {
+        return new MultimediaClient($this);
     }
 
     public function products(?string $modelClass = null): ProductClient
     {
-        return new ProductClient($this, $modelClass);
+        return new ProductClient($this);
     }
 
-    public function productsList(?string $modelClass = null): ProductListClient
+    public function productsList(): ProductListClient
     {
-        return new ProductListClient($this, $modelClass);
+        return new ProductListClient($this);
     }
 
-    public function templates(?string $modelClass = null): TemplateClient
+    public function templates(): TemplateClient
     {
-        return new TemplateClient($this, $modelClass);
+        return new TemplateClient($this);
     }
 
     public function getHttpClient(): Client
@@ -62,10 +68,10 @@ class ErgonodeApi
 
         $httpClientConfig['base_uri'] = $hostname;
 
-        $this->httpClient = new Client($httpClientConfig);
+        $this->httpClient = new \GuzzleHttp\Client($httpClientConfig);
     }
 
-    private function loginHttpClient(Client $client, string $username, string $password)
+    private function loginHttpClient(\GuzzleHttp\Client $client, string $username, string $password)
     {
         $this->clientAuthenticator = new ClientAuthenticator($client);
         $this->clientAuthenticator->authenticate($username, $password);
