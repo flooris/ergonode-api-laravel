@@ -9,7 +9,11 @@ use Flooris\ErgonodeApi\ErgonodeObjectApiAbstract;
 
 class AttributeOptionClient extends ErgonodeObjectApiAbstract
 {
-    public function __construct(ErgonodeApi $connector, AttributeModel $attribute, ?string $modelClass = null)
+    public function __construct(
+        ErgonodeApi $connector,
+        public AttributeModel $attribute,
+        ?string $modelClass = null
+    )
     {
         $endpoint = "attributes/{$attribute->id}/options";
 
@@ -27,6 +31,13 @@ class AttributeOptionClient extends ErgonodeObjectApiAbstract
     public function findByCode(string $code): ?AttributeOptionModel
     {
         $this->model = $this->all()->where('code', $code)->first();
+
+        return $this->model;
+    }
+
+    public function findById($id)
+    {
+        $this->model = $this->all($this->attribute)->where('id', $id)->first();
 
         return $this->model;
     }

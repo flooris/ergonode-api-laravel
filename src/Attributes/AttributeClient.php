@@ -16,7 +16,7 @@ class AttributeClient extends ErgonodeObjectApiAbstract
         parent::__construct(
             $connector,
             static::ENDPOINT,
-            $modelClass ?? AttributeModel::class
+            $modelClass ?? AttributeOptionModel::class
         );
     }
 
@@ -30,4 +30,21 @@ class AttributeClient extends ErgonodeObjectApiAbstract
 
         return $this->model;
     }
+
+    public function fillModel(string $id, string $code, ?string $label = null, array $options = []): AttributeModel
+    {
+        $attributeModel       = new AttributeModel();
+        $attributeModel->id   = $id;
+        $attributeModel->code = $code;
+        if ($label) {
+            $attributeModel->label = $label;
+        }
+        if(count($options)) {
+            $attributeModel->setOptions($options);
+        }
+        $this->model = $attributeModel;
+
+        return $this->model;
+    }
+
 }

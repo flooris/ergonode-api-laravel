@@ -29,14 +29,9 @@ class ErgonodeApi
         return new ProductClient($this, $modelClass);
     }
 
-    public function productsList(?string $modelClass = null): ProductListClient
+    public function templates(?string $modelClass = null, ?string $endpoint = null): TemplateClient
     {
-        return new ProductListClient($this, $modelClass);
-    }
-
-    public function templates(?string $modelClass = null): TemplateClient
-    {
-        return new TemplateClient($this, $modelClass);
+        return new TemplateClient($this, $modelClass, $endpoint);
     }
 
     public function getHttpClient(): Client

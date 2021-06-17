@@ -23,7 +23,7 @@ class TemplateModel extends ErgonodeAbstractModel
         $this->id       = $this->responseObject->id;
         $this->name     = $this->responseObject->name;
         $this->elements = $this->responseObject->elements;
-        $this->setAttributes($this->locale, $this->elements);
+        $this->setAttributes($this->elements);
     }
 
     public function resolveErgonodeClient(): TemplateClient
@@ -35,20 +35,34 @@ class TemplateModel extends ErgonodeAbstractModel
      * @throws GuzzleException
      * @throws JsonException
      */
-    private function setAttributes(string $locale, array $elements): void
+    private function setAttributes(array $elements): void
     {
         $this->attributes = collect();
-        foreach ($elements as $element) {
-            if ($element->properties->type !== 'attribute') {
-                continue;
+        $attributeClient  = new AttributeClient($this->getErgonodeClient()->getErgonodeApi());
+
+        if (count($elements) && isset($elements[0]->properties->type)) {
+            foreach ($elements as $element) {
+                if ($element->properties->type !== 'attribute') {
+                    continue;
+                }
+
+                $attributeId = $element->properties->attribute_id;
+
+                $attributeClient = new AttributeClient($this->getErgonodeClient()->getErgonodeApi());
+                if ($attributeClient->find($attributeId)) {
+                    $this->attributes->push($attributeClient->model());
+                }
             }
 
-            $attributeId = $element->properties->attribute_id;
-
-            $attributeClient = new AttributeClient($this->getErgonodeClient()->getErgonodeApi());
-            if ($attributeClient->find($attributeId)) {
-                $this->attributes->push($attributeClient->model());
-            }
+            return;
         }
+
+        $elements         = collect($elements);
+        $this->attributes = $elements->map(function ($element) use ($attributeClient) {
+            $props   = (array)$element->properties;
+            $options = isset($props['options']) ? (array)$props['options'] : [];
+
+            return $attributeClient->fillModel($props['attribute_id'], $props['attribute_code'], null, $options);
+        });
     }
 }

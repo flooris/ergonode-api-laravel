@@ -8,8 +8,8 @@ use GuzzleHttp\RequestOptions;
 use Illuminate\Support\Collection;
 use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\Exception\GuzzleException;
-use Flooris\ErgonodeApi\Attributes\ErgonodeClient;
 use Flooris\ErgonodeApi\Attributes\ErgonodeModel;
+use Flooris\ErgonodeApi\Attributes\ErgonodeClient;
 
 abstract class ErgonodeObjectApiAbstract implements ErgonodeClient
 {
@@ -32,9 +32,13 @@ abstract class ErgonodeObjectApiAbstract implements ErgonodeClient
     /**
      * @throws GuzzleException|JsonException
      */
-    public function find(string $id): ?ErgonodeModel
+    public function find(string $id, ?string $extra = null): ?ErgonodeModel
     {
-        $this->model = $this->getModel("{$this->getLocale()}/$this->endpointSlug/$id", $this->modelClass);
+        if ($extra) {
+            $this->model = $this->getModel("{$this->getLocale()}/$this->endpointSlug/$id/$extra", $this->modelClass);
+        } else {
+            $this->model = $this->getModel("{$this->getLocale()}/$this->endpointSlug/$id", $this->modelClass);
+        }
 
         return $this->model;
     }
@@ -52,11 +56,14 @@ abstract class ErgonodeObjectApiAbstract implements ErgonodeClient
     }
 
     /**
-     * @throws GuzzleException|JsonException
+     * @param ErgonodeModel|null $parentModel
+     * @return Collection
+     * @throws GuzzleException
+     * @throws JsonException
      */
-    public function all(): Collection
+    public function all(?ErgonodeModel $parentModel = null): Collection
     {
-        return $this->getCollection("{$this->getLocale()}/$this->endpointSlug", $this->modelClass);
+        return $this->getCollection("{$this->getLocale()}/$this->endpointSlug", $this->modelClass, null, $parentModel);
     }
 
     /**
@@ -218,10 +225,15 @@ abstract class ErgonodeObjectApiAbstract implements ErgonodeClient
     }
 
     /**
+     * @param string        $uri
+     * @param string        $modelClass
+     * @param array|null    $options
+     * @param ErgonodeModel $parentModel
+     * @return Collection
      * @throws GuzzleException
      * @throws JsonException
      */
-    private function getCollection(string $uri, string $modelClass, ?array $options = null): Collection
+    private function getCollection(string $uri, string $modelClass, ?array $options = null, ?ErgonodeModel $parentModel = null): Collection
     {
         $collection   = collect();
         $responseData = json_decode($this->get($uri, $options)
@@ -237,7 +249,8 @@ abstract class ErgonodeObjectApiAbstract implements ErgonodeClient
         }
 
         foreach ($items as $responseObject) {
-            $collection = $collection->push((new $modelClass($this, $responseObject)));
+            $collection = $parentModel ? $collection->push((new $modelClass($this, $responseObject, $parentModel)))
+                : $collection->push((new $modelClass($this, $responseObject)));
         }
 
         return $collection;
