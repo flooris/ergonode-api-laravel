@@ -39,7 +39,7 @@ class AttributeClient extends ErgonodeObjectApiAbstract
         if ($label) {
             $attributeModel->label = $label;
         }
-        if(count($options)) {
+        if (count($options)) {
             $attributeModel->setOptions($options);
         }
         $this->model = $attributeModel;

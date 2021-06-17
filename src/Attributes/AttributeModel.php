@@ -84,7 +84,6 @@ class AttributeModel extends ErgonodeAbstractModel
         $codes = collect(explode(',', $this->label));
 
         $this->setCurrentOption($codes);
-        ;
         if (gettype($this->currentOption) == "array") {
             $this->label = collect($this->currentOption)->map(function ($option) {
                 return $option->label[$this->locale];
@@ -94,6 +93,7 @@ class AttributeModel extends ErgonodeAbstractModel
         }
 
         $this->label = $this->currentOption->label[$this->locale];
+
         return $this->currentOption;
     }
 
