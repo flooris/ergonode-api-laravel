@@ -1,27 +1,28 @@
 <?php
 
-namespace Flooris\ErgonodeApi;
+namespace Flooris\Ergonode;
 
+use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
 use Illuminate\Support\Facades\Cache;
 use GuzzleHttp\Exception\GuzzleException;
 
-class ClientAuthenticator
+class Authenticator
 {
-    private \GuzzleHttp\Client $httpClient;
+    private Client $httpClient;
     private string $cacheKeyTokens = 'ERGONODE_API_TOKENS';
     private string $bearerToken;
     private string $refreshToken;
 
-    public function __construct(\GuzzleHttp\Client $httpClient)
+    public function __construct(Client $httpClient)
     {
         $this->httpClient = $httpClient;
     }
 
     public function authenticate(string $username, string $password): void
     {
-        if (cache()->has($this->cacheKeyTokens)) {
-            $tokens = cache($this->cacheKeyTokens);
+        if (Cache::has($this->cacheKeyTokens)) {
+            $tokens = Cache::get($this->cacheKeyTokens);
 
             $this->setBearerToken($tokens->token);
             $this->setRefreshToken($tokens->refresh_token);
@@ -59,7 +60,7 @@ class ClientAuthenticator
         $this->setRefreshToken($tokens->refresh_token);
 
         $lifeTimeSeconds = (60 * 60 * 24); // 24 hours
-        cache()->set($this->cacheKeyTokens, $tokens, $lifeTimeSeconds);
+        Cache::set($this->cacheKeyTokens, $tokens, $lifeTimeSeconds);
     }
 
     public function setCacheKeyTokens(string $cacheKeyTokens): void
@@ -67,34 +68,22 @@ class ClientAuthenticator
         $this->cacheKeyTokens = $cacheKeyTokens;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getBearerToken()
+    public function getBearerToken(): string
     {
         return $this->bearerToken;
     }
 
-    /**
-     * @param mixed $bearerToken
-     */
-    public function setBearerToken($bearerToken): void
+    public function setBearerToken(string $bearerToken): void
     {
         $this->bearerToken = $bearerToken;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getRefreshToken()
+    public function getRefreshToken(): string
     {
         return $this->refreshToken;
     }
 
-    /**
-     * @param mixed $refreshToken
-     */
-    public function setRefreshToken($refreshToken): void
+    public function setRefreshToken(string $refreshToken): void
     {
         $this->refreshToken = $refreshToken;
     }
