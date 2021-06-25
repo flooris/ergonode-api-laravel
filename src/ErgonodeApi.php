@@ -1,9 +1,9 @@
 <?php
 
-namespace Flooris\Ergonode;
+namespace Flooris\ErgonodeApi;
 
-use Flooris\Ergonode\Api\ProductClient;
-use Flooris\Ergonode\Api\AttributeClient;
+use Flooris\ErgonodeApi\Api\ProductClient;
+use Flooris\ErgonodeApi\Api\AttributeClient;
 
 class ErgonodeApi
 {

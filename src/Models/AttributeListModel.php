@@ -1,9 +1,9 @@
 <?php
 
-namespace Flooris\Ergonode\Models;
+namespace Flooris\ErgonodeApi\Models;
 
-use Flooris\Ergonode\Models\Contracts\ListModel;
-use Flooris\Ergonode\Models\Traits\ListModelTrait;
+use Flooris\ErgonodeApi\Models\Contracts\ListModel;
+use Flooris\ErgonodeApi\Models\Traits\ListModelTrait;
 
 class AttributeListModel extends AttributeBaseModel implements ListModel
 {

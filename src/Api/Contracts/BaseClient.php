@@ -1,9 +1,9 @@
 <?php
 
-namespace Flooris\Ergonode\Api\Contracts;
+namespace Flooris\ErgonodeApi\Api\Contracts;
 
-use Flooris\Ergonode\ErgonodeApi;
-use Flooris\Ergonode\Models\Contracts\Model;
+use Flooris\ErgonodeApi\ErgonodeApi;
+use Flooris\ErgonodeApi\Models\Contracts\Model;
 
 interface BaseClient
 {

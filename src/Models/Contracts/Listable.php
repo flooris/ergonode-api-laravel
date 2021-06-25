@@ -1,6 +1,6 @@
 <?php
 
-namespace Flooris\Ergonode\Models\Contracts;
+namespace Flooris\ErgonodeApi\Models\Contracts;
 
 use stdClass;
 use Illuminate\Pagination\LengthAwarePaginator;

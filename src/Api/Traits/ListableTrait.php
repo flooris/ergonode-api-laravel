@@ -1,11 +1,11 @@
 <?php
 
-namespace Flooris\Ergonode\Api\Traits;
+namespace Flooris\ErgonodeApi\Api\Traits;
 
 use stdClass;
-use Flooris\Ergonode\Models\Contracts\Model;
-use Flooris\Ergonode\Models\ModelFactory;
-use Flooris\Ergonode\Api\Contracts\ChildClient;
+use Flooris\ErgonodeApi\Models\Contracts\Model;
+use Flooris\ErgonodeApi\Models\ModelFactory;
+use Flooris\ErgonodeApi\Api\Contracts\ChildClient;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 trait ListableTrait

@@ -1,8 +1,8 @@
 <?php
 
-namespace Flooris\Ergonode\Api\Contracts;
+namespace Flooris\ErgonodeApi\Api\Contracts;
 
-use Flooris\Ergonode\ErgonodeApi;
+use Flooris\ErgonodeApi\ErgonodeApi;
 
 interface Client extends BaseClient
 {

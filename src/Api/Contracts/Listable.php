@@ -1,9 +1,9 @@
 <?php
 
-namespace Flooris\Ergonode\Api\Contracts;
+namespace Flooris\ErgonodeApi\Api\Contracts;
 
 use stdClass;
-use Flooris\Ergonode\Models\Contracts\Model;
+use Flooris\ErgonodeApi\Models\Contracts\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 interface Listable

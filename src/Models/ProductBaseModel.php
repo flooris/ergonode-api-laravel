@@ -1,12 +1,12 @@
 <?php
 
-namespace Flooris\Ergonode\Models;
+namespace Flooris\ErgonodeApi\Models;
 
-use Flooris\Ergonode\Api\ProductClient;
-use Flooris\Ergonode\Models\Contracts\Listable;
+use Flooris\ErgonodeApi\Api\ProductClient;
+use Flooris\ErgonodeApi\Models\Contracts\Listable;
 use Illuminate\Contracts\Routing\UrlRoutable;
-use Flooris\Ergonode\Models\Traits\ListableTrait;
-use Flooris\Ergonode\Models\Traits\UrlRoutableTrait;
+use Flooris\ErgonodeApi\Models\Traits\ListableTrait;
+use Flooris\ErgonodeApi\Models\Traits\UrlRoutableTrait;
 
 class ProductBaseModel extends AbstractModel implements UrlRoutable, Listable
 {

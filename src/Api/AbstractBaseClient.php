@@ -1,20 +1,20 @@
 <?php
 
 
-namespace Flooris\Ergonode\Api;
+namespace Flooris\ErgonodeApi\Api;
 
 use stdClass;
-use Flooris\Ergonode\ErgonodeApi;
+use Flooris\ErgonodeApi\ErgonodeApi;
 use InvalidArgumentException;
-use Flooris\Ergonode\Models\Contracts\Model;
+use Flooris\ErgonodeApi\Models\Contracts\Model;
 use Illuminate\Support\Collection;
-use Flooris\Ergonode\Models\ModelFactory;
-use Flooris\Ergonode\Api\Contracts\Listable;
-use Flooris\Ergonode\Api\Contracts\Client;
-use Flooris\Ergonode\Api\Contracts\BaseClient;
-use Flooris\Ergonode\Api\Contracts\ChildClient;
-use Flooris\Ergonode\Models\Contracts\ListModel;
-use Flooris\Ergonode\Models\Contracts\BaseModel;
+use Flooris\ErgonodeApi\Models\ModelFactory;
+use Flooris\ErgonodeApi\Api\Contracts\Listable;
+use Flooris\ErgonodeApi\Api\Contracts\Client;
+use Flooris\ErgonodeApi\Api\Contracts\BaseClient;
+use Flooris\ErgonodeApi\Api\Contracts\ChildClient;
+use Flooris\ErgonodeApi\Models\Contracts\ListModel;
+use Flooris\ErgonodeApi\Models\Contracts\BaseModel;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 abstract class AbstractBaseClient implements BaseClient
@@ -48,7 +48,7 @@ abstract class AbstractBaseClient implements BaseClient
             throw new InvalidArgumentException("$modelClassToSet should not implement ListModel interface.");
         }
 
-        $this->modelClass = $modelClass ?? $this->modelClass();
+        $this->modelClass = $modelClassToSet;
     }
 
     private function setListModelClass(?string $listModelClass): void
@@ -59,7 +59,7 @@ abstract class AbstractBaseClient implements BaseClient
             return;
         }
 
-        $listModelClassToSet = $listModelClass ?? $this->modelClass();
+        $listModelClassToSet = $listModelClass ?? $this->listModelClass();
 
         if (! is_a($listModelClassToSet, BaseModel::class, true)) {
             throw new InvalidArgumentException("$listModelClassToSet does not implement BaseModel interface.");
@@ -69,7 +69,7 @@ abstract class AbstractBaseClient implements BaseClient
             throw new InvalidArgumentException("$listModelClassToSet does not implement ListModel interface.");
         }
 
-        $this->listModelClass = $listModelClass ?? $this->listModelClass();
+        $this->listModelClass = $listModelClassToSet;
     }
 
     private function setErgonodeApi(?ErgonodeApi $ergonodeApi = null): void

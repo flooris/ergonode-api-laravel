@@ -1,8 +1,8 @@
 <?php
 
-namespace Flooris\Ergonode\Models\Contracts;
+namespace Flooris\ErgonodeApi\Models\Contracts;
 
-use Flooris\Ergonode\Api\Contracts\ChildClient;
+use Flooris\ErgonodeApi\Api\Contracts\ChildClient;
 
 interface ChildModel extends BaseModel
 {

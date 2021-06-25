@@ -1,12 +1,12 @@
 <?php
 
-namespace Flooris\Ergonode\Models;
+namespace Flooris\ErgonodeApi\Models;
 
 use stdClass;
 use Illuminate\Support\Collection;
-use Flooris\Ergonode\Models\Contracts\Model;
-use Flooris\Ergonode\Api\Contracts\BaseClient;
-use Flooris\Ergonode\Models\Contracts\ChildModel;
+use Flooris\ErgonodeApi\Models\Contracts\Model;
+use Flooris\ErgonodeApi\Api\Contracts\BaseClient;
+use Flooris\ErgonodeApi\Models\Contracts\ChildModel;
 
 class ModelFactory
 {

@@ -1,13 +1,14 @@
 <?php
 
 
-namespace Flooris\Ergonode\Models;
+namespace Flooris\ErgonodeApi\Models;
 
 use Exception;
-use Flooris\Ergonode\Api\Contracts\Client;
-use Flooris\Ergonode\Models\Contracts\ListModel;
+use Flooris\ErgonodeApi\Api\Contracts\Client;
+use Flooris\ErgonodeApi\Models\Contracts\ListModel;
+use Flooris\ErgonodeApi\Models\Contracts\Model;
 
-abstract class AbstractModel extends AbstractBaseModel
+abstract class AbstractModel extends AbstractBaseModel implements Model
 {
     public function __construct(?Client $client = null)
     {
@@ -30,7 +31,6 @@ abstract class AbstractModel extends AbstractBaseModel
             $listModelClass = static::class;
         }
 
-
-        return new $clientClass();
+        return new $clientClass(modelClass: $modelClass, listModelClass: $listModelClass);
     }
 }

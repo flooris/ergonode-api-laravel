@@ -1,13 +1,13 @@
 <?php
 
 
-namespace Flooris\Ergonode\Models;
+namespace Flooris\ErgonodeApi\Models;
 
-use Flooris\Ergonode\Api\Contracts\Client;
-use Flooris\Ergonode\Models\Contracts\Model;
-use Flooris\Ergonode\Api\Contracts\ChildClient;
-use Flooris\Ergonode\Models\Contracts\BaseModel;
-use Flooris\Ergonode\Models\Contracts\ChildModel;
+use Flooris\ErgonodeApi\Api\Contracts\Client;
+use Flooris\ErgonodeApi\Models\Contracts\Model;
+use Flooris\ErgonodeApi\Api\Contracts\ChildClient;
+use Flooris\ErgonodeApi\Models\Contracts\BaseModel;
+use Flooris\ErgonodeApi\Models\Contracts\ChildModel;
 
 abstract class AbstractBaseModel implements BaseModel
 {

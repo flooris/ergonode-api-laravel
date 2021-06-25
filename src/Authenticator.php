@@ -1,6 +1,6 @@
 <?php
 
-namespace Flooris\Ergonode;
+namespace Flooris\ErgonodeApi;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;

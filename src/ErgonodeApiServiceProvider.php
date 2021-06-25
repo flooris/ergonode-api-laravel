@@ -1,6 +1,6 @@
 <?php
 
-namespace Flooris\Ergonode;
+namespace Flooris\ErgonodeApi;
 
 use Illuminate\Support\ServiceProvider;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace Flooris\Ergonode\Models\Contracts;
+namespace Flooris\ErgonodeApi\Models\Contracts;
 
 interface ListModel
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Flooris\Ergonode\Models;
+namespace Flooris\ErgonodeApi\Models;
 
 class AttributeOptionListModel extends AttributeOptionBaseModel
 {

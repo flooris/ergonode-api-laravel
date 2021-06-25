@@ -1,9 +1,9 @@
 <?php
 
 
-namespace Flooris\Ergonode\Api;
+namespace Flooris\ErgonodeApi\Api;
 
-use Flooris\Ergonode\Api\Contracts\Client;
+use Flooris\ErgonodeApi\Api\Contracts\Client;
 
 
 abstract class AbstractClient extends AbstractBaseClient implements Client

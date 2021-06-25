@@ -1,11 +1,11 @@
 <?php
 
-namespace Flooris\Ergonode\Api;
+namespace Flooris\ErgonodeApi\Api;
 
-use Flooris\Ergonode\Api\Contracts\Listable;
-use Flooris\Ergonode\Api\Traits\ListableTrait;
-use Flooris\Ergonode\Models\AttributeOptionModel;
-use Flooris\Ergonode\Models\AttributeOptionListModel;
+use Flooris\ErgonodeApi\Api\Contracts\Listable;
+use Flooris\ErgonodeApi\Api\Traits\ListableTrait;
+use Flooris\ErgonodeApi\Models\AttributeOptionModel;
+use Flooris\ErgonodeApi\Models\AttributeOptionListModel;
 
 class AttributeOptionClient extends AbstractChildClient implements Listable
 {

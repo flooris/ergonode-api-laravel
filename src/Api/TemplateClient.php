@@ -1,11 +1,11 @@
 <?php
 
-namespace Flooris\Ergonode\Api;
+namespace Flooris\ErgonodeApi\Api;
 
-use Flooris\Ergonode\Api\Contracts\Listable;
-use Flooris\Ergonode\Api\Traits\ListableTrait;
-use Flooris\Ergonode\Models\TemplateListModel;
-use Flooris\Ergonode\Models\TemplateModel;
+use Flooris\ErgonodeApi\Api\Contracts\Listable;
+use Flooris\ErgonodeApi\Api\Traits\ListableTrait;
+use Flooris\ErgonodeApi\Models\TemplateListModel;
+use Flooris\ErgonodeApi\Models\TemplateModel;
 
 class TemplateClient extends AbstractClient implements Listable
 {

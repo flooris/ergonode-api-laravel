@@ -1,9 +1,9 @@
 <?php
 
-namespace Flooris\Ergonode\Models\Traits;
+namespace Flooris\ErgonodeApi\Models\Traits;
 
 use stdClass;
-use Flooris\Ergonode\Models\Contracts\Model;
+use Flooris\ErgonodeApi\Models\Contracts\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 trait ListableTrait

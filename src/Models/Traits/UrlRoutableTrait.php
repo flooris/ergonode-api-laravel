@@ -1,10 +1,10 @@
 <?php
 
 
-namespace Flooris\Ergonode\Models\Traits;
+namespace Flooris\ErgonodeApi\Models\Traits;
 
 
-use Flooris\Ergonode\Models\Model;
+use Flooris\ErgonodeApi\Models\Model;
 
 trait UrlRoutableTrait
 {

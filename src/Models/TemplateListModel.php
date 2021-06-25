@@ -1,10 +1,10 @@
 <?php
 
 
-namespace Flooris\Ergonode\Models;
+namespace Flooris\ErgonodeApi\Models;
 
 
-use Flooris\Ergonode\Models\Traits\ListModelTrait;
+use Flooris\ErgonodeApi\Models\Traits\ListModelTrait;
 
 class TemplateListModel extends TemplateBaseModel
 {

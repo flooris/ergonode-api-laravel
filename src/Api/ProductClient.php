@@ -1,13 +1,13 @@
 <?php
 
-namespace Flooris\Ergonode\Api;
+namespace Flooris\ErgonodeApi\Api;
 
-use Flooris\Ergonode\Models\ModelFactory;
-use Flooris\Ergonode\Models\ProductListModel;
-use Flooris\Ergonode\Models\ProductModel;
-use Flooris\Ergonode\Api\Traits\ListableTrait;
-use Flooris\Ergonode\Api\Contracts\Listable;
-use Flooris\Ergonode\Models\TemplateModel;
+use Flooris\ErgonodeApi\Models\ModelFactory;
+use Flooris\ErgonodeApi\Models\ProductListModel;
+use Flooris\ErgonodeApi\Models\ProductModel;
+use Flooris\ErgonodeApi\Api\Traits\ListableTrait;
+use Flooris\ErgonodeApi\Api\Contracts\Listable;
+use Flooris\ErgonodeApi\Models\TemplateModel;
 
 class ProductClient extends AbstractClient implements Listable
 {

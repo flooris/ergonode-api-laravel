@@ -1,10 +1,11 @@
 <?php
 
-namespace Flooris\Ergonode\Models;
+namespace Flooris\ErgonodeApi\Models;
 
 use Exception;
-use Flooris\Ergonode\Api\Contracts\ChildClient;
-use Flooris\Ergonode\Models\Contracts\ChildModel;
+use Flooris\ErgonodeApi\Api\Contracts\ChildClient;
+use Flooris\ErgonodeApi\Models\Contracts\ListModel;
+use Flooris\ErgonodeApi\Models\Contracts\ChildModel;
 
 
 abstract class AbstractChildModel extends AbstractBaseModel implements ChildModel
@@ -28,7 +29,15 @@ abstract class AbstractChildModel extends AbstractBaseModel implements ChildMode
             throw new Exception("Can't instantiate ChildClient, either a resolved ChildClient or parent ID should be given in the constructor");
         }
 
-        return new $clientClass($parentId);
+        $modelClass = static::class;
+        $listModelClass = null;
+
+        if ($this instanceof ListModel) {
+            $modelClass = null;
+            $listModelClass = static::class;
+        }
+
+        return new $clientClass(parentId: $parentId, modelClass: $modelClass, listModelClass: $listModelClass);
     }
 
     public function getParentId(): ?string
