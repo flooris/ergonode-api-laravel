@@ -8,4 +8,9 @@ use Flooris\ErgonodeApi\Models\Traits\ListModelTrait;
 class ProductListModel extends ProductBaseModel implements ListModel
 {
     use ListModelTrait;
+
+    public function modelClass(): string
+    {
+        return ProductModel::class;
+    }
 }

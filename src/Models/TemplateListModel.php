@@ -12,4 +12,9 @@ class TemplateListModel extends TemplateBaseModel
 
     public string $default_label_attribute;
     public string $default_image_attribute;
+
+    public function modelClass(): string
+    {
+        return TemplateModel::class;
+    }
 }

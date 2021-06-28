@@ -11,4 +11,9 @@ class AttributeListModel extends AttributeBaseModel implements ListModel
 
     public array $templates = [];
     public array $_links = [];
+
+    public function modelClass(): string
+    {
+        return AttributeModel::class;
+    }
 }
