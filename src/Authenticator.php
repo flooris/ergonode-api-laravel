@@ -9,14 +9,13 @@ use GuzzleHttp\Exception\GuzzleException;
 
 class Authenticator
 {
-    private Client $httpClient;
     private string $cacheKeyTokens = 'ERGONODE_API_TOKENS';
     private string $bearerToken;
     private string $refreshToken;
 
-    public function __construct(Client $httpClient)
+    public function __construct(private Client $httpClient)
     {
-        $this->httpClient = $httpClient;
+
     }
 
     public function authenticate(string $username, string $password): void
@@ -86,5 +85,26 @@ class Authenticator
     public function setRefreshToken(string $refreshToken): void
     {
         $this->refreshToken = $refreshToken;
+    }
+
+    public function setHttpClient(Client $httpClient): void
+    {
+        $this->httpClient = $httpClient;
+    }
+
+    public function __serialize(): array
+    {
+        return [
+            'cacheKeyTokens' => $this->cacheKeyTokens,
+            'bearerToken'    => $this->bearerToken,
+            'refreshToken'   => $this->refreshToken,
+        ];
+    }
+
+    public function __unserialize(array $data): void
+    {
+        $this->cacheKeyTokens = $data['cacheKeyTokens'];
+        $this->bearerToken    = $data['bearerToken'];
+        $this->refreshToken   = $data['refreshToken'];
     }
 }

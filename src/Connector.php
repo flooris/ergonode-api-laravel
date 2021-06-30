@@ -17,7 +17,7 @@ class Connector
     private Client $httpClient;
     private Authenticator $authenticator;
 
-    public function __construct(private string $locale, string $hostname, string $username, string $password)
+    public function __construct(private string $locale, private string $hostname, string $username, string $password)
     {
         $this->httpClient = new Client([
             'base_uri' => $hostname,
@@ -84,5 +84,27 @@ class Connector
     public function getLocale(): string
     {
         return $this->locale;
+    }
+
+    public function __serialize(): array
+    {
+        return [
+            'locale'        => $this->locale,
+            'hostname'      => $this->hostname,
+            'authenticator' => $this->authenticator,
+        ];
+    }
+
+    public function __unserialize(array $data): void
+    {
+        $this->locale        = $data['locale'];
+        $this->hostname      = $data['hostname'];
+        $this->authenticator = $data['authenticator'];
+
+        $this->httpClient = new Client([
+            'base_uri' => $this->hostname,
+        ]);
+
+        $this->authenticator->setHttpClient($this->httpClient);
     }
 }
