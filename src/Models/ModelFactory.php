@@ -52,9 +52,21 @@ class ModelFactory
                 continue;
             }
 
-            $key           = $element->properties->attribute_code;
-            $originalValue = $newAttributes[$key];
-            $newValue      = $element->properties?->options?->{$originalValue}?->label;
+            $key = $element->properties->attribute_code;
+
+            if ($element->type = 'MULTI_SELECT') {
+                $originalValues = explode(',', $newAttributes[$key]);
+                $newValue       = [];
+
+                foreach ($originalValues as $originalValue) {
+                    $newValue[] = $element->properties?->options?->{$originalValue}?->label;
+                }
+
+                $newValue = empty($newValue) ? null : $newValue;
+            } else {
+                $originalValue = $newAttributes[$key];
+                $newValue      = $element->properties?->options?->{$originalValue}?->label;
+            }
 
             if ($newValue) {
                 $newAttributes[$key] = $newValue;
@@ -77,6 +89,19 @@ class ModelFactory
 
                     if ($id) {
                         $item->{$column->id} = $column->filter->options?->{$id}->label;
+                    }
+                }
+            } elseif ($column->type === 'MULTI_SELECT') {
+                foreach ($response->collection as $item) {
+                    $ids    = $item->{$column->id};
+                    $values = [];
+
+                    foreach ($ids as $id) {
+                        $values[] = $column->filter->options?->{$id}->label;
+                    }
+
+                    if (! empty($values)) {
+                        $item->{$column->id} = $values;
                     }
                 }
             }
