@@ -60,7 +60,9 @@ class ModelFactory
                 $newValue       = [];
 
                 foreach ($originalValues as $originalValue) {
-                    $newValue[$originalValue] = $element->properties?->options?->{$originalValue}?->label;
+                    if (isset($element->properties?->options)) {
+                        $newValue[$originalValue] = $element->properties?->options?->{$originalValue}?->label;
+                    }
                 }
 
                 $newValue = empty($newValue) ? null : $newValue;
