@@ -70,7 +70,13 @@ class Connector
 
     private function decodeResponse(ResponseInterface $response): stdClass
     {
-        return json_decode($response->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
+        $decodedResponse = json_decode($response->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
+
+        if (is_array($decodedResponse)) {
+            $decodedResponse = (object)['collection' => $decodedResponse];
+        }
+
+        return $decodedResponse;
     }
 
     private function buildUri(string $uri, array $uriParameters = []): string

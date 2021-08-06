@@ -16,6 +16,7 @@ use Flooris\ErgonodeApi\Api\Contracts\ChildClient;
 use Flooris\ErgonodeApi\Models\Contracts\ListModel;
 use Flooris\ErgonodeApi\Models\Contracts\BaseModel;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Flooris\ErgonodeApi\Models\Contracts\ChildModel;
 
 abstract class AbstractBaseClient implements BaseClient
 {
@@ -87,12 +88,13 @@ abstract class AbstractBaseClient implements BaseClient
         return app(ErgonodeApi::class);
     }
 
-    public function find(string $id): Model
+    public function find(string $id): Model|ChildModel
     {
-        return $this->getModel($this->singleUri(), uriParameters: $this instanceof ChildClient ? [$this->parentId, $id] : [$id]);
+        return $this->getModel($this->singleUri(), uriParameters: $this instanceof
+                                                                  ChildClient ? [$this->parentId, $id] : [$id]);
     }
 
-    protected function getModel(string $uri, array $query = [], array $uriParameters = []): Model
+    protected function getModel(string $uri, array $query = [], array $uriParameters = []): Model|ChildModel
     {
         return ModelFactory::create($this, $this->getModelRaw($uri, $query, $uriParameters), $this->modelClass);
     }

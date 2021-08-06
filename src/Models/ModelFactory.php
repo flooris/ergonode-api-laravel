@@ -13,14 +13,15 @@ class ModelFactory
     public static function create(BaseClient $client, stdClass $responseObject, string $resourceName): Model|ChildModel
     {
         $resource = new $resourceName(client: $client);
-        $result = static::resolveLocaleValues($client->getErgonodeApi()->connector->getLocale(), $responseObject);
+        $result   = static::resolveLocaleValues($client->getErgonodeApi()->connector->getLocale(), $responseObject);
 
         foreach ($result as $property => $value) {
             $resource->{$property} = match (true) {
                 $property === '_links' => collect($value)
                     ->mapWithKeys(fn (stdClass $link, string $key) => [$key => $link->href])
                     ->toArray(),
-                $property === 'attributes' && $resource instanceof ProductModel => static::resolveProductModelAttributes($value, $resource, $result->id),
+                $property === 'attributes' && $resource instanceof
+                                              ProductModel => static::resolveProductModelAttributes($value, $resource, $result->id),
                 default => $value,
             };
 
@@ -31,7 +32,7 @@ class ModelFactory
 
     public static function createCollection(BaseClient $client, stdClass $responseObject, string $resourceName): Collection
     {
-        $result = static::resolveListColumns($responseObject);
+        $result    = static::resolveListColumns($responseObject);
         $resources = [];
 
         foreach ($result->collection as $entry) {
@@ -59,7 +60,7 @@ class ModelFactory
                 $newValue       = [];
 
                 foreach ($originalValues as $originalValue) {
-                    $newValue[] = $element->properties?->options?->{$originalValue}?->label;
+                    $newValue[$originalValue] = $element->properties?->options?->{$originalValue}?->label;
                 }
 
                 $newValue = empty($newValue) ? null : $newValue;
@@ -97,7 +98,7 @@ class ModelFactory
                     $values = [];
 
                     foreach ($ids as $id) {
-                        $values[] = $column->filter->options?->{$id}->label;
+                        $values[] = $column->filter->options?->{$id}->label ?? $column->filter->options?->{$id}->code;
                     }
 
                     if (! empty($values)) {

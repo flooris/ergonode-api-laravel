@@ -4,6 +4,7 @@ namespace Flooris\ErgonodeApi;
 
 use Flooris\ErgonodeApi\Api\ProductClient;
 use Flooris\ErgonodeApi\Api\AttributeClient;
+use Flooris\ErgonodeApi\Api\AttributeOptionClient;
 
 class ErgonodeApi
 {
@@ -22,5 +23,10 @@ class ErgonodeApi
     public function attributes(?string $modelClass = null): AttributeClient
     {
         return new AttributeClient($this, $modelClass);
+    }
+
+    public function attributeOptions(string $parentId, ?string $modelClass = null): AttributeOptionClient
+    {
+        return new AttributeOptionClient(parentId: $parentId, ergonodeApi: $this, modelClass: $modelClass);
     }
 }
