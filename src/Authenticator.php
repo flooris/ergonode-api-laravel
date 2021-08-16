@@ -50,7 +50,9 @@ class Authenticator
             $response = $this->httpClient->post('login', $options);
 
         } catch (GuzzleException $exception) {
-            throw $exception;
+            $this->setBearerToken('');
+            $this->setRefreshToken('');
+            return;
         }
 
         $tokens = json_decode($response->getBody());
