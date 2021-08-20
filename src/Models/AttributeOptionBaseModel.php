@@ -11,6 +11,7 @@ class AttributeOptionBaseModel extends AbstractChildModel implements Listable
     use ListableTrait;
 
     public string $code;
+    public string|array $label;
     public array $_links = [];
 
     public function clientClass(): string

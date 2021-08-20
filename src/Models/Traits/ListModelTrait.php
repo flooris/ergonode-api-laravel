@@ -7,7 +7,7 @@ use Flooris\ErgonodeApi\Models\Contracts\Model;
 
 trait ListModelTrait
 {
-    public function getFullModel(): Model
+    public function getFullModel()
     {
         if (!$this->id) {
             throw new Exception("Can't find full model when list model is empty");

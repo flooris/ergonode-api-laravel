@@ -4,6 +4,6 @@ namespace Flooris\ErgonodeApi\Models\Contracts;
 
 interface ListModel
 {
-    public function getFullModel(): Model;
+    public function getFullModel();
     public function modelClass(): string;
 }
