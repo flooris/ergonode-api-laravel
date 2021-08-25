@@ -12,6 +12,7 @@ class Connector
     private const HTTP_GET = 'GET';
     private const HTTP_POST = 'POST';
     private const HTTP_PUT = 'PUT';
+    private const HTTP_PATCH = 'PATCH';
     private const HTTP_DELETE = 'DELETE';
 
     private Client $httpClient;
@@ -40,6 +41,11 @@ class Connector
     public function put(string $uri, array $data, array $query = [], array $uriParameters = []): stdClass
     {
         return $this->send(static::HTTP_PUT, $this->buildUri($uri, $uriParameters), $data, $query);
+    }
+
+    public function patch(string $uri, array $data, array $query = [], array $uriParameters = []): stdClass
+    {
+        return $this->send(static::HTTP_PATCH, $this->buildUri($uri, $uriParameters), $data, $query);
     }
 
     public function delete(string $uri, array $data = [], array $uriParameters = []): stdClass
