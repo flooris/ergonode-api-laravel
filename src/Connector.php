@@ -18,14 +18,18 @@ class Connector
     private Client $httpClient;
     private Authenticator $authenticator;
 
-    public function __construct(private string $locale, private string $hostname, string $username, string $password)
+    public function __construct(private string $locale, private string $hostname, private string $username, private string $password)
     {
         $this->httpClient = new Client([
             'base_uri' => $hostname,
         ]);
 
         $this->authenticator = new Authenticator($this->httpClient);
-        $this->authenticator->authenticate($username, $password);
+    }
+
+    public function authenticate()
+    {
+        $this->authenticator->authenticate($this->username, $this->password);
     }
 
     public function get(string $uri, array $query = [], array $uriParameters = []): stdClass
@@ -55,6 +59,10 @@ class Connector
 
     private function send(string $method, string $uri, array $data = [], array $query = []): stdClass
     {
+        if( !$this->authenticator->loggedIn ){
+            $this->authenticate();
+        }
+
         $options = [
             RequestOptions::HEADERS     => [
                 'User-Agent'       => config('ergonode.client-options.user-agent', 'flooris/ergonode-api'),
