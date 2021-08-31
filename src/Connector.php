@@ -6,6 +6,7 @@ use stdClass;
 use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
 use Psr\Http\Message\ResponseInterface;
+use GuzzleHttp\Exception\GuzzleException;
 
 class Connector
 {
@@ -57,7 +58,12 @@ class Connector
         return $this->send(static::HTTP_DELETE, $this->buildUri($uri, $uriParameters), $data);
     }
 
-    private function send(string $method, string $uri, array $data = [], array $query = []): stdClass
+    public function getRawContent(string $uri)
+    {
+        return $this->send(static::HTTP_GET, $uri, [], [], false);
+    }
+
+    private function send(string $method, string $uri, array $data = [], array $query = [], bool $decodeResponse = true)
     {
         if( !$this->authenticator->loggedIn ){
             $this->authenticate();
@@ -79,7 +85,13 @@ class Connector
             $options[RequestOptions::JSON] = $data;
         }
 
-        return $this->decodeResponse($this->httpClient->request($method, $uri, $options));
+        $response = $this->httpClient->request($method, $uri, $options);
+
+        if (! $decodeResponse) {
+            return $response->getBody()->getContents();
+        }
+
+        return $this->decodeResponse($response);
     }
 
     private function decodeResponse(ResponseInterface $response): stdClass
@@ -95,7 +107,6 @@ class Connector
 
     private function buildUri(string $uri, array $uriParameters = []): string
     {
-
         $localeUri = ltrim("$this->locale/$uri", '/');
 
         return vsprintf($localeUri, $uriParameters);
@@ -126,5 +137,30 @@ class Connector
         ]);
 
         $this->authenticator->setHttpClient($this->httpClient);
+    }
+
+    public function upload(string $entityUri, array $imageData): stdClass
+    {
+        $options = [
+            RequestOptions::SYNCHRONOUS => true,
+            RequestOptions::DEBUG       => false,
+            RequestOptions::HEADERS     => [
+                'User-Agent'       => config('ergonode.client-options.user-agent', 'flooris/ergonode-api'),
+                'Content-Type'     => 'application/json',
+                'Accept'           => 'application/json',
+                'JWTAuthorization' => "Bearer " . $this->authenticator->getBearerToken(),
+            ],
+            RequestOptions::MULTIPART => [
+                [
+                    'name'     => 'upload',
+                    'contents' => $imageData['image'],
+                    'filename' => $imageData['file_name'],
+                ],
+            ],
+        ];
+
+        $uri = $this->buildUri($entityUri);
+
+        return $this->decodeResponse($this->httpClient->request(static::HTTP_POST, $uri, $options));
     }
 }

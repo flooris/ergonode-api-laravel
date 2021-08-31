@@ -4,6 +4,7 @@
 namespace Flooris\ErgonodeApi\Api;
 
 use stdClass;
+use Flooris\ErgonodeApi\Connector;
 use Flooris\ErgonodeApi\ErgonodeApi;
 use InvalidArgumentException;
 use Flooris\ErgonodeApi\Models\Contracts\Model;

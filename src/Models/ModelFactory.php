@@ -49,29 +49,38 @@ class ModelFactory
         foreach ($productModel->template($productId)->elements as $element) {
             if (! isset($element->properties->attribute_code) ||
                 ! array_key_exists($element->properties->attribute_code, $newAttributes) ||
-                ! in_array($element->type, ['SELECT', 'MULTI_SELECT'])) {
+                ! in_array($element->type, ['SELECT', 'MULTI_SELECT', 'TEXT', 'TEXT_AREA', 'PRICE', 'NUMERIC', 'IMAGE', 'GALLERY'])) {
                 continue;
             }
 
             $key = $element->properties->attribute_code;
 
-            if ($element->type = 'MULTI_SELECT') {
+            if ($element->type === 'MULTI_SELECT' || $element->type === 'GALLERY') {
                 $originalValues = explode(',', $newAttributes[$key]);
                 $newValue       = [];
 
                 foreach ($originalValues as $originalValue) {
                     if (isset($element->properties?->options)) {
                         $newValue[$originalValue] = $element->properties?->options?->{$originalValue}?->label;
+                    } else {
+                        $newValue[] = $originalValue;
                     }
                 }
 
                 $newValue = empty($newValue) ? null : $newValue;
+            } else if (isset($element->properties?->options)) {
+                $originalValue = $newAttributes[$key];
+                $newValue      = $element->properties?->options?->{$originalValue}?->label;
+            } else if (isset($newAttributes[$element->properties?->attribute_code])) {
+                $newValue = $newAttributes[$key];
             } else {
                 $originalValue = $newAttributes[$key];
                 $newValue      = $element->properties?->options?->{$originalValue}?->label;
             }
 
-            if ($newValue) {
+            if ($element->type === 'SELECT') {
+                $newAttributes[$key] = [$originalValue => $newValue];
+            } else if ($newValue) {
                 $newAttributes[$key] = $newValue;
             }
         }
