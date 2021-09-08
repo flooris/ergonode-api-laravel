@@ -75,7 +75,7 @@ class ModelFactory
                 $newValue = $newAttributes[$key];
             } else {
                 $originalValue = $newAttributes[$key];
-                $newValue      = $element->properties?->options?->{$originalValue}?->label;
+                $newValue      = null;
             }
 
             if ($element->type === 'SELECT') {
