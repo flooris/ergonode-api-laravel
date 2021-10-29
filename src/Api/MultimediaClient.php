@@ -56,19 +56,12 @@ class MultimediaClient extends AbstractClient implements Listable
         return $this->getErgonodeApi()->connector->getRawContent($uri);
     }
 
-    public function update(string $id, array $attributes): ProductModel
+    public function update(string $id, array $attributes): MultimediaModel
     {
         $connector = $this->ergonodeApi->connector;
 
         try {
-            $connector->patch($this->attributesUri(), [
-                'data' => [
-                    (object)[
-                        'id'      => $id,
-                        'payload' => $attributes,
-                    ],
-                ],
-            ]);
+            $connector->put($this->singleUri(), $attributes, [], [$id], false);
         } catch (Exception $e) {
             //Catches the error that can not resolve the empty response, anything else will error out.
             if ($e->getCode() !== 4) {

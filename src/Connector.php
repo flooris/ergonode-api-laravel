@@ -43,9 +43,9 @@ class Connector
         return $this->send(static::HTTP_POST, $this->buildUri($uri, $uriParameters), $data);
     }
 
-    public function put(string $uri, array $data, array $query = [], array $uriParameters = []): stdClass
+    public function put(string $uri, array $data, array $query = [], array $uriParameters = [], bool $decodedResponse = true): stdClass|string
     {
-        return $this->send(static::HTTP_PUT, $this->buildUri($uri, $uriParameters), $data, $query);
+        return $this->send(static::HTTP_PUT, $this->buildUri($uri, $uriParameters), $data, $query, $decodedResponse);
     }
 
     public function patch(string $uri, array $data, array $query = [], array $uriParameters = []): stdClass
