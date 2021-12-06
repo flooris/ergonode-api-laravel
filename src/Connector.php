@@ -7,6 +7,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
 use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Exception\ClientException;
 
 class Connector
 {
@@ -63,7 +64,7 @@ class Connector
         return $this->send(static::HTTP_GET, $uri, [], [], false);
     }
 
-    private function send(string $method, string $uri, array $data = [], array $query = [], bool $decodeResponse = true)
+    private function send(string $method, string $uri, array $data = [], array $query = [], bool $decodeResponse = true, bool $isRetry = false)
     {
         if( !$this->authenticator->loggedIn ){
             $this->authenticate();
@@ -85,7 +86,21 @@ class Connector
             $options[RequestOptions::JSON] = $data;
         }
 
-        $response = $this->httpClient->request($method, $uri, $options);
+        try {
+            
+            $response = $this->httpClient->request($method, $uri, $options);
+
+        } catch (ClientException $clientException) {
+            if (! $isRetry &&
+                401 === $clientException->getCode()
+            ) {
+                $this->authenticator->purgeTokenCache();
+                $this->authenticate();
+
+                $isRetry = true;
+                $this->send($method, $uri, $data, $query, $decodeResponse, $isRetry);
+            }
+        }
 
         if (! $decodeResponse) {
             return $response->getBody()->getContents();

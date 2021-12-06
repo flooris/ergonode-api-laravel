@@ -20,7 +20,7 @@ class Authenticator
         $this->loggedIn = $this->cacheTokensValid();
     }
 
-    private function cacheTokensValid()
+    private function cacheTokensValid(): bool
     {
         if (Cache::has($this->cacheKeyTokens)) {
             $tokens = Cache::get($this->cacheKeyTokens);
@@ -122,5 +122,10 @@ class Authenticator
         $this->cacheKeyTokens = $data['cacheKeyTokens'];
         $this->bearerToken    = $data['bearerToken'];
         $this->refreshToken   = $data['refreshToken'];
+    }
+
+    public function purgeTokenCache(): void
+    {
+        Cache::delete($this->cacheKeyTokens);
     }
 }
