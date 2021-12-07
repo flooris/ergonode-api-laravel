@@ -98,7 +98,7 @@ class Connector
                 $this->authenticate();
 
                 $isRetry = true;
-                $this->send($method, $uri, $data, $query, $decodeResponse, $isRetry);
+                return $this->send($method, $uri, $data, $query, $decodeResponse, $isRetry);
             }
         }
 
