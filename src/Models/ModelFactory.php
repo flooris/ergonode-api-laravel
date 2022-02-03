@@ -54,19 +54,13 @@ class ModelFactory
                 continue;
             }
 
-            $resultInLanguage = $api->connector->get($api->products()->singleUri() .
-                                                     "/inherited/$language->code", uriParameters: [$resource->id]);
+            $singleUri        = $api->products()->singleUri();
+            $resultInLanguage = $api->connector->get("{$singleUri}/inherited/$language->code", uriParameters: [$resource->id]);
+
             $resource->getClient()->getErgonodeApi()->connector->setLocale($language->code);
-
-
+            
             $resultInLanguage = (object)collect(static::resolveLocaleValues($language->code, $resultInLanguage)->attributes)
-                ->map(function (string|array $item): string {
-                    if (is_array($item)) {
-                        return implode(",", $item);
-                    }
-
-                    return $item;
-                })
+                ->map(fn (string|array $item): string => is_array($item) ? implode(",", $item) : $item)
                 ->toArray();
 
             $resolvedLanguage = static::resolveProductModelAttributes($resultInLanguage, $resource, $resource->id);
