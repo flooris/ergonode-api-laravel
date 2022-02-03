@@ -3,6 +3,7 @@
 namespace Flooris\ErgonodeApi;
 
 use Flooris\ErgonodeApi\Api\ProductClient;
+use Flooris\ErgonodeApi\Api\LanguageClient;
 use Flooris\ErgonodeApi\Api\AttributeClient;
 use Flooris\ErgonodeApi\Api\MultimediaClient;
 use Flooris\ErgonodeApi\Api\AttributeOptionClient;
@@ -34,5 +35,10 @@ class ErgonodeApi
     public function multimedia(?string $modelClass = null): MultimediaClient
     {
         return new MultimediaClient($this, $modelClass);
+    }
+
+    public function languages(?string $modelClass = null): LanguageClient
+    {
+        return new LanguageClient($this, $modelClass);
     }
 }

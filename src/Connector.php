@@ -6,7 +6,6 @@ use stdClass;
 use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
 use Psr\Http\Message\ResponseInterface;
-use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\ClientException;
 
 class Connector
@@ -130,6 +129,11 @@ class Connector
     public function getLocale(): string
     {
         return $this->locale;
+    }
+
+    public function setLocale(string $locale): void
+    {
+        $this->locale = $locale;
     }
 
     public function __serialize(): array

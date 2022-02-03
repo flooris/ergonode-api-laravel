@@ -24,8 +24,52 @@ class ModelFactory
                                               ProductModel => static::resolveProductModelAttributes($value, $resource, $result->id),
                 default => $value,
             };
-
         }
+
+        $defaultLocale = $resource->getClient()->getErgonodeApi()->connector->getLocale();
+
+        if ($resource instanceof ProductModel && isset($resource->translations)) {
+            static::resolveTranslationsOnProductResource($resource, $defaultLocale);
+        }
+
+        return $resource;
+    }
+
+    private static function resolveTranslationsOnProductResource(mixed $resource, string $defaultLocale): mixed
+    {
+        $resource->translations["attributes"] = (object)[];
+
+        foreach ($resource->attributes as $field => $value) {
+            $resource->translations["attributes"]->{$field} = (object)[
+                $defaultLocale => $value,
+            ];
+        }
+
+        $api             = $resource->getClient()->getErgonodeApi();
+        $languagesClient = $api->languages();
+        $languages       = $languagesClient->all(true);
+
+        foreach ($languages as $language) {
+            if ($defaultLocale === $language->code) {
+                continue;
+            }
+
+            $singleUri        = $api->products()->singleUri();
+            $resultInLanguage = $api->connector->get("{$singleUri}/inherited/$language->code", uriParameters: [$resource->id]);
+
+            $resource->getClient()->getErgonodeApi()->connector->setLocale($language->code);
+            
+            $resultInLanguage = (object)collect(static::resolveLocaleValues($language->code, $resultInLanguage)->attributes)
+                ->map(fn (string|array $item): string => is_array($item) ? implode(",", $item) : $item)
+                ->toArray();
+
+            $resolvedLanguage = static::resolveProductModelAttributes($resultInLanguage, $resource, $resource->id);
+            foreach ($resolvedLanguage as $field => $value) {
+                $resource->translations["attributes"]->{$field}->{$language->code} = $value;
+            }
+        }
+
+        $resource->getClient()->getErgonodeApi()->connector->setLocale($defaultLocale);
 
         return $resource;
     }
@@ -88,6 +132,7 @@ class ModelFactory
         return $newAttributes;
     }
 
+
     private static function resolveListColumns(stdClass $response): stdClass
     {
         if (! isset($response->columns)) {
@@ -127,7 +172,8 @@ class ModelFactory
         if (is_object($input)) {
             foreach ($input as $key => &$value) {
                 $value = match (true) {
-                    str_starts_with($key, 'esa_') && ! property_exists($value, $locale) => $value->{''},
+                    str_starts_with($key, 'esa_') && ! property_exists($value, $locale) &&
+                    is_object($value) => $value->{''},
                     is_object($value) && property_exists($value, $locale) => $value->{$locale},
                     is_object($value) || is_array($value) => static::resolveLocaleValues($locale, $value),
                     default => $value,
