@@ -60,7 +60,7 @@ class ModelFactory
             $resource->getClient()->getErgonodeApi()->connector->setLocale($language->code);
             
             $resultInLanguage = (object)collect(static::resolveLocaleValues($language->code, $resultInLanguage)->attributes)
-                ->map(fn (string|array $item): string => is_array($item) ? implode(",", $item) : $item)
+                ->map(fn (null|string|array $item): ?string => is_array($item) ? implode(",", $item) : $item)
                 ->toArray();
 
             $resolvedLanguage = static::resolveProductModelAttributes($resultInLanguage, $resource, $resource->id);
