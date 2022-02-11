@@ -4,6 +4,7 @@ namespace Flooris\ErgonodeApi\Models;
 
 use stdClass;
 use Illuminate\Support\Collection;
+use Flooris\ErgonodeApi\ErgonodeApi;
 use Flooris\ErgonodeApi\Models\Contracts\Model;
 use Flooris\ErgonodeApi\Api\Contracts\BaseClient;
 use Flooris\ErgonodeApi\Models\Contracts\ChildModel;
@@ -32,6 +33,10 @@ class ModelFactory
             static::resolveTranslationsOnProductResource($resource, $defaultLocale);
         }
 
+        if ($resource instanceof AttributeModel && isset($resource->translations)) {
+            static::resolveTranslationsOnAttributeResource($resource, $defaultLocale);
+        }
+
         return $resource;
     }
 
@@ -58,7 +63,7 @@ class ModelFactory
             $resultInLanguage = $api->connector->get("{$singleUri}/inherited/$language->code", uriParameters: [$resource->id]);
 
             $resource->getClient()->getErgonodeApi()->connector->setLocale($language->code);
-            
+
             $resultInLanguage = (object)collect(static::resolveLocaleValues($language->code, $resultInLanguage)->attributes)
                 ->map(fn (null|string|array $item): ?string => is_array($item) ? implode(",", $item) : $item)
                 ->toArray();
@@ -70,6 +75,22 @@ class ModelFactory
         }
 
         $resource->getClient()->getErgonodeApi()->connector->setLocale($defaultLocale);
+
+        return $resource;
+    }
+
+    private static function resolveTranslationsOnAttributeResource(mixed $resource, string $defaultLocale): mixed
+    {
+        $resource->translations['label'] = json_decode(json_encode($resource->label), true);
+        $resource->translations['hint']  = json_decode(json_encode($resource->hint), true);
+
+        if (isset($resource->label->$defaultLocale)) {
+            $resource->label = $resource->label->$defaultLocale;
+        }
+
+        if (isset($resource->hint->$defaultLocale)) {
+            $resource->hint = $resource->hint->$defaultLocale;
+        }
 
         return $resource;
     }
@@ -170,7 +191,7 @@ class ModelFactory
     private static function resolveLocaleValues(string $locale, mixed $input)
     {
         if (is_object($input)) {
-            foreach ($input as $key => &$value) {
+            foreach ($input as $key => $value) {
                 $value = match (true) {
                     str_starts_with($key, 'esa_') && ! property_exists($value, $locale) &&
                     is_object($value) => $value->{''},
