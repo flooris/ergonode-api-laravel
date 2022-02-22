@@ -191,7 +191,7 @@ class ModelFactory
     private static function resolveLocaleValues(string $locale, mixed $input)
     {
         if (is_object($input)) {
-            foreach ($input as $key => $value) {
+            foreach ($input as $key => &$value) {
                 $value = match (true) {
                     str_starts_with($key, 'esa_') && ! property_exists($value, $locale) &&
                     is_object($value) => $value->{''},
