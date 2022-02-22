@@ -145,7 +145,7 @@ class ModelFactory
                     $id = $item->{$column->id};
 
                     if ($id) {
-                        $item->{$column->id} = $column->filter->options?->{$id}->label;
+                        $item->{$column->id} = $column->filter->options?->{$id}->label ?? $column->filter->options?->{$id}->code;
                     }
                 }
             } elseif ($column->type === 'MULTI_SELECT') {
