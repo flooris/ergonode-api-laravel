@@ -6,7 +6,6 @@ use Illuminate\Support\Collection;
 use Flooris\ErgonodeApi\Models\ModelFactory;
 use Flooris\ErgonodeApi\Api\Contracts\Listable;
 use Flooris\ErgonodeApi\Api\Traits\ListableTrait;
-use Flooris\ErgonodeApi\Api\Contracts\ChildClient;
 use Flooris\ErgonodeApi\Models\AttributeOptionModel;
 use Flooris\ErgonodeApi\Models\AttributeOptionListModel;
 
