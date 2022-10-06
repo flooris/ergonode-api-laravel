@@ -48,9 +48,9 @@ class Connector
         return $this->send(static::HTTP_PUT, $this->buildUri($uri, $uriParameters), $data, $query, $decodedResponse);
     }
 
-    public function patch(string $uri, array $data, array $query = [], array $uriParameters = []): stdClass
+    public function patch(string $uri, array $data, array $query = [], array $uriParameters = [], bool $decodeResponse = true): stdClass|string
     {
-        return $this->send(static::HTTP_PATCH, $this->buildUri($uri, $uriParameters), $data, $query);
+        return $this->send(static::HTTP_PATCH, $this->buildUri($uri, $uriParameters), $data, $query, $decodeResponse);
     }
 
     public function delete(string $uri, array $data = [], array $uriParameters = []): stdClass
@@ -98,6 +98,9 @@ class Connector
 
                 $isRetry = true;
                 return $this->send($method, $uri, $data, $query, $decodeResponse, $isRetry);
+            }
+            else{
+                throw $clientException;
             }
         }
 
@@ -165,7 +168,6 @@ class Connector
             RequestOptions::DEBUG       => false,
             RequestOptions::HEADERS     => [
                 'User-Agent'       => config('ergonode.client-options.user-agent', 'flooris/ergonode-api'),
-                'Content-Type'     => 'application/json',
                 'Accept'           => 'application/json',
                 'JWTAuthorization' => "Bearer " . $this->authenticator->getBearerToken(),
             ],
