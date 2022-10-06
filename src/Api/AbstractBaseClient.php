@@ -4,6 +4,7 @@
 namespace Flooris\ErgonodeApi\Api;
 
 use stdClass;
+use Flooris\ErgonodeApi\Connector;
 use Flooris\ErgonodeApi\ErgonodeApi;
 use InvalidArgumentException;
 use Flooris\ErgonodeApi\Models\Contracts\Model;
@@ -94,6 +95,11 @@ abstract class AbstractBaseClient implements BaseClient
                                                                   ChildClient ? [$this->parentId, $id] : [$id]);
     }
 
+    public function findRaw(string $id): stdClass
+    {
+        return $this->getModelRaw($this->singleUri(), uriParameters: [$id]);
+    }
+
     protected function getModel(string $uri, array $query = [], array $uriParameters = []): Model|ChildModel
     {
         return ModelFactory::create($this, $this->getModelRaw($uri, $query, $uriParameters), $this->modelClass);
@@ -102,6 +108,11 @@ abstract class AbstractBaseClient implements BaseClient
     protected function getModelRaw(string $uri, array $query = [], array $uriParameters = []): stdClass
     {
         return $this->ergonodeApi->connector->get($uri, $query, $uriParameters);
+    }
+
+    public function getModelRawArray(string $uri, array $query = [], array $uriParameters = []): array
+    {
+        return json_decode(json_encode($this->getModelRaw($uri, $query, $uriParameters)), true);
     }
 
     protected function getModels(string $uri, array $columns = [], string $view = 'grid', ?int $limit = null, ?int $offset = null, array $filters = [], ?string $sortField = null, string $sortOrder = 'DESC', $uriParameters = []): Collection

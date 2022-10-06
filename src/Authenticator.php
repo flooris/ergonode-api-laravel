@@ -2,23 +2,25 @@
 
 namespace Flooris\ErgonodeApi;
 
+use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
 use Illuminate\Support\Facades\Cache;
-use GuzzleHttp\Exception\GuzzleException;
+use Flooris\ErgonodeApi\Api\Exceptions\ErgonodeConnectionError;
 
 class Authenticator
 {
     private string $cacheKeyTokens = 'ERGONODE_API_TOKENS';
     private string $bearerToken;
     private string $refreshToken;
+    public bool $loggedIn;
 
     public function __construct(private Client $httpClient)
     {
-
+        $this->loggedIn = $this->cacheTokensValid();
     }
 
-    public function authenticate(string $username, string $password): void
+    private function cacheTokensValid(): bool
     {
         if (Cache::has($this->cacheKeyTokens)) {
             $tokens = Cache::get($this->cacheKeyTokens);
@@ -26,6 +28,17 @@ class Authenticator
             $this->setBearerToken($tokens->token);
             $this->setRefreshToken($tokens->refresh_token);
 
+            return true;
+        }
+        return false;
+    }
+
+    public function authenticate(string $username, string $password): void
+    {
+        $loggedInByCache = $this->cacheTokensValid();
+
+        if ($loggedInByCache){
+            $this->loggedIn = true;
             return;
         }
 
@@ -49,10 +62,10 @@ class Authenticator
 
             $response = $this->httpClient->post('login', $options);
 
-        } catch (GuzzleException $exception) {
-            $this->setBearerToken('');
-            $this->setRefreshToken('');
-            return;
+        } catch (Exception $exception) {
+            $this->loggedIn = false;
+            $errorMsg = $exception->getMessage();
+            throw new ErgonodeConnectionError("Could not login. ${errorMsg}");
         }
 
         $tokens = json_decode($response->getBody());
@@ -62,6 +75,7 @@ class Authenticator
 
         $lifeTimeSeconds = (60 * 60 * 24); // 24 hours
         Cache::set($this->cacheKeyTokens, $tokens, $lifeTimeSeconds);
+        $this->loggedIn = true;
     }
 
     public function setCacheKeyTokens(string $cacheKeyTokens): void
@@ -108,5 +122,10 @@ class Authenticator
         $this->cacheKeyTokens = $data['cacheKeyTokens'];
         $this->bearerToken    = $data['bearerToken'];
         $this->refreshToken   = $data['refreshToken'];
+    }
+
+    public function purgeTokenCache(): void
+    {
+        Cache::delete($this->cacheKeyTokens);
     }
 }
