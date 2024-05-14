@@ -33,14 +33,14 @@ class Connector
         $this->authenticator->authenticate($this->username, $this->password);
     }
 
-    public function get(string $uri, array $query = [], array $uriParameters = []): stdClass
+    public function get(string $uri, array $query = [], array $uriParameters = [], bool $decodeResponse = true): stdClass|string
     {
-        return $this->send(method: static::HTTP_GET, uri: $this->buildUri($uri, $uriParameters), query: $query);
+        return $this->send(method: static::HTTP_GET, uri: $this->buildUri($uri, $uriParameters), query: $query, decodeResponse: $decodeResponse);
     }
 
-    public function post(string $uri, array $data, array $uriParameters = []): stdClass
+    public function post(string $uri, array $data, array $uriParameters = [], bool $decodeResponse = true): stdClass|string
     {
-        return $this->send(static::HTTP_POST, $this->buildUri($uri, $uriParameters), $data);
+        return $this->send(static::HTTP_POST, $this->buildUri($uri, $uriParameters), $data, decodeResponse: $decodeResponse);
     }
 
     public function put(string $uri, array $data, array $query = [], array $uriParameters = [], bool $decodedResponse = true): stdClass|string
@@ -53,9 +53,9 @@ class Connector
         return $this->send(static::HTTP_PATCH, $this->buildUri($uri, $uriParameters), $data, $query, $decodeResponse);
     }
 
-    public function delete(string $uri, array $data = [], array $uriParameters = []): stdClass
+    public function delete(string $uri, array $data = [], array $uriParameters = [], $decodeResponse = true): stdClass|string
     {
-        return $this->send(static::HTTP_DELETE, $this->buildUri($uri, $uriParameters), $data);
+        return $this->send(static::HTTP_DELETE, $this->buildUri($uri, $uriParameters), $data, decodeResponse: $decodeResponse);
     }
 
     public function getRawContent(string $uri)
@@ -65,7 +65,7 @@ class Connector
 
     private function send(string $method, string $uri, array $data = [], array $query = [], bool $decodeResponse = true, bool $isRetry = false)
     {
-        if( !$this->authenticator->loggedIn ){
+        if (! $this->authenticator->loggedIn) {
             $this->authenticate();
         }
 
@@ -86,7 +86,7 @@ class Connector
         }
 
         try {
-            
+
             $response = $this->httpClient->request($method, $uri, $options);
 
         } catch (ClientException $clientException) {
@@ -97,9 +97,9 @@ class Connector
                 $this->authenticate();
 
                 $isRetry = true;
+
                 return $this->send($method, $uri, $data, $query, $decodeResponse, $isRetry);
-            }
-            else{
+            } else {
                 throw $clientException;
             }
         }
@@ -171,7 +171,7 @@ class Connector
                 'Accept'           => 'application/json',
                 'JWTAuthorization' => "Bearer " . $this->authenticator->getBearerToken(),
             ],
-            RequestOptions::MULTIPART => [
+            RequestOptions::MULTIPART   => [
                 [
                     'name'     => 'upload',
                     'contents' => $imageData['image'],
